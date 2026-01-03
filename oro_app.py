@@ -7,10 +7,9 @@ from scipy.special import comb
 from datetime import datetime
 import requests
 
-# 1. FUNCIÓN CON CACHÉ
-# ttl=86400 significa que el dato se guarda por 24 horas (en segundos)
+# 1. FUNCIÓN DE CACHÉ CORREGIDA
 @st.cache_data(ttl=86400)
-def fetch_gold_data():
+def fetch_gold_data_clean():
     ticker_symbol = "GC=F"
     headers = {'User-Agent': 'Mozilla/5.0'}
     session = requests.Session()
@@ -18,96 +17,103 @@ def fetch_gold_data():
     
     try:
         gold = yf.Ticker(ticker_symbol, session=session)
-        # Descargamos el último año
         hist = gold.history(period="1y")
-        if hist.empty: return None
         
-        s_actual = hist['Close'].iloc[-1]
+        if hist.empty:
+            return None
+        
+        # Extraemos solo datos primitivos (números y listas de strings)
+        s_actual = float(hist['Close'].iloc[-1])
         log_returns = np.log(hist['Close'] / hist['Close'].shift(1)).dropna()
-        sigma = log_returns.var()
-        options = gold.options
+        sigma_val = float(log_returns.var())
         
-        # Guardamos la hora de la descarga
-        last_update = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+        # Guardamos las fechas como una lista simple de strings
+        options_list = list(gold.options)
         
         return {
             "S": s_actual,
-            "sigma": sigma,
-            "options": options,
-            "updated": last_update
+            "sigma": sigma_val,
+            "options": options_list,
+            "updated": datetime.now().strftime("%H:%M:%S")
         }
-    except:
+    except Exception as e:
         return None
 
-# --- INICIO DE LA APP ---
-st.set_page_config(page_title="Valuador Oro Cache", layout="wide")
+# --- INTERFAZ ---
+st.set_page_config(page_title="Valuador Oro", layout="wide")
+st.title("🏆 Valuador de Call sobre Oro")
 
-# Intentar cargar datos del "depósito" (caché)
-data = fetch_gold_data()
+# Intentar obtener datos
+data = fetch_gold_data_clean()
 
 with st.sidebar:
-    st.header("📦 Estado de los Datos")
+    st.header("📊 Datos de Mercado")
+    
     if data:
-        st.success(f"Datos cargados desde el caché.")
-        st.caption(f"Última actualización: {data['updated']}")
-        # Botón para forzar la actualización si se desea
-        if st.button("🔄 Actualizar datos de Yahoo ahora"):
+        st.success(f"Datos actualizados a las {data['updated']}")
+        if st.button("🔄 Forzar actualización"):
             st.cache_data.clear()
             st.rerun()
+            
+        S = st.number_input("Precio Oro (S)", value=data['S'])
+        sigma = st.number_input("Varianza (σ)", value=data['sigma'], format="%.6f")
+        
+        if data['options']:
+            sel_date = st.selectbox("Fecha vencimiento (T)", data['options'])
+            dias = (datetime.strptime(sel_date, '%Y-%m-%d') - datetime.now()).days
+            T = max(dias / 365, 0.01)
+        else:
+            T = st.number_input("Plazo T (años)", value=0.5)
     else:
-        st.error("No se pudo obtener datos. Introduce valores manuales.")
-
-    st.divider()
-    
-    # --- PARÁMETROS ---
-    st.header("⚙️ Parámetros")
-    # Si hay datos, los usamos como valor por defecto, si no, usamos ceros
-    s_val = data['S'] if data else 2650.0
-    sig_val = data['sigma'] if data else 0.00015
-    
-    S = st.number_input("Precio Oro (S)", value=float(s_val))
-    sigma = st.number_input("Varianza (σ)", value=float(sig_val), format="%.6f")
-    
-    # Plazo T
-    if data and data['options']:
-        selected_t = st.selectbox("Vencimientos disponibles", data['options'])
-        dias = (datetime.strptime(selected_t, '%Y-%m-%d') - datetime.now()).days
-        T = max(dias / 365, 0.01)
-    else:
+        st.warning("⚠️ Usando modo manual (Yahoo no disponible)")
+        S = st.number_input("Precio Oro (S)", value=2650.0)
+        sigma = st.number_input("Varianza (σ)", value=0.00015, format="%.6f")
         T = st.number_input("Plazo T (años)", value=0.5)
 
+    st.divider()
+    st.header("⚙️ Parámetros Modelo")
     delta_val = st.slider("Delta (Δ)", 0.01, 1.0, 0.1)
     alpha = st.number_input("Alpha (α)", value=1.0)
     beta = st.number_input("Beta (β)", value=0.5)
     r = st.number_input("Tasa r (SOFR)", value=0.053)
     K = st.number_input("Strike K", value=float(round(S, 2)))
 
-# --- CÁLCULOS MATEMÁTICOS ---
+# --- CÁLCULOS (Pasos 4 al 9) ---
 u = np.exp(alpha * (delta_val ** beta))
 d = np.exp((sigma * (delta_val ** beta)) / alpha)
 M = int(round(T / delta_val))
-p = (np.exp(r * delta_val) - d) / (u - d) if (u-d) != 0 else 0.5
 
-# Cálculo de C(m)
+# Evitar división por cero en p
+p = (np.exp(r * delta_val) - d) / (u - d) if (u - d) != 0 else 0.5
+
+# Cálculo de C(m) para el gráfico
 m_axis = np.arange(0, M + 1)
 c_results = []
+
 for m in m_axis:
     k = np.arange(m + 1)
-    prices = (u**k) * (d**(m-k)) * S
-    payoffs = np.maximum(prices - K, 0)
+    # S(m,k) = u^k * d^(m-k) * S
+    prices_at_m = (u**k) * (d**(m-k)) * S
+    # C(x) = max(x - K, 0)
+    payoffs = np.maximum(prices_at_m - K, 0)
+    # Sumatoria probabilística
     probs = comb(m, k) * (p**k) * ((1-p)**(m-k))
     c_m = np.exp(-r * T) * np.sum(payoffs * probs)
     c_results.append(c_m)
 
-# --- VISUALIZACIÓN ---
-st.title("🏆 Valuador de Call sobre Oro")
-st.info(f"Modelo configurado con **M = {M}** pasos.")
-
+# --- GRÁFICO (Paso 10) ---
 fig = go.Figure()
-fig.add_trace(go.Scatter(x=m_axis, y=c_results, line=dict(color="#FFD700", width=3)))
-fig.update_layout(title="Curva de Valor C(m)", xaxis_title="Pasos m", yaxis_title="Precio del Call", template="plotly_dark")
+fig.add_trace(go.Scatter(x=m_axis, y=c_results, line=dict(color="#FFD700", width=3), name="C(m)"))
+fig.update_layout(
+    title=f"Convergencia del Precio del Call (M={M})",
+    xaxis_title="Número de subintervalos (m)",
+    yaxis_title="Precio del Derivado C(m)",
+    template="plotly_dark"
+)
 st.plotly_chart(fig, use_container_width=True)
 
-col1, col2 = st.columns(2)
-col1.metric("Precio Final Call C(M)", f"${c_results[-1]:.2f}")
-col2.metric("Probabilidad p", f"{p:.4f}")
+# Métricas finales
+c1, c2, c3 = st.columns(3)
+c1.metric("Precio Final C(M)", f"${c_results[-1]:.2f}")
+c2.metric("Factor Subida (u)", f"{u:.4f}")
+c3.metric("Factor Bajada (d)", f"{d:.4f}")
