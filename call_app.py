@@ -11,7 +11,7 @@ from scipy.special import comb
 st.set_page_config(page_title="Valuador de Opciones Oro (Binomial)", layout="wide")
 
 # --- FUNCIONES DE OBTENCIÓN DE DATOS ---
-
+@st.cache_data(ttl=3600)
 def get_market_data_goldapi():
     """Obtiene el precio actual del oro (XAU/USD) desde GoldAPI."""
     try:
