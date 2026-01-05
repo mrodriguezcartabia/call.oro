@@ -29,6 +29,7 @@ def get_market_data_goldapi():
     except Exception:
         return None
 
+@st.cache_data(ttl=3600)
 def get_fred_risk_free_rate():
     """Obtiene la tasa libre de riesgo desde FRED."""
     try:
@@ -41,6 +42,7 @@ def get_fred_risk_free_rate():
     except Exception:
         return 0.0425  # Tasa de respaldo
 
+@st.cache_data(ttl=86400)
 def fecha_vencimiento_oro(year, month):
     """Calcula el 4to día hábil antes del fin de mes (Regla CME para Oro)."""
     try:
@@ -119,7 +121,7 @@ T = (vencimiento_dt - hoy.date()).days / 365.0
 st.info(f"📅 **Vencimiento estimado:** {vencimiento_dt} | **T:** {T:.4f} años")
 
 # --- MOTOR DE CÁLCULO ---
-
+@st.cache_data
 def calcular_call_crr(S, K, r, T, sigma, beta, paso):
     # m = entero más cercano a T/Paso
     m = int(round(T / paso))
