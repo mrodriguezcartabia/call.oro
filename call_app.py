@@ -78,8 +78,6 @@ if 'data_grafico' not in st.session_state:
     st.session_state.data_grafico = None
 
 # --- INTERFAZ ---
-st.title("📱 App de Valuación de Call sobre Oro")
-st.markdown("---")
 
 hoy = datetime.now()
 mes_contrato = hoy.month + 1 if hoy.month < 12 else 1
@@ -120,7 +118,7 @@ with c_p2:
 with c_rec:
     btn_recalcular = st.button("RECALCULAR", type="primary", use_container_width=True)
 
-st.info(f"📅 **Vencimiento estimado:** {vencimiento_dt} | **T:** {T:.4f} años")
+st.info(f" **Vencimiento estimado:** {vencimiento_dt} | **T:** {T:.4f} años")
 
 # --- LÓGICA DE CÁLCULO BAJO DEMANDA ---
 
