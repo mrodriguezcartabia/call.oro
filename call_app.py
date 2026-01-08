@@ -45,18 +45,18 @@ def get_fred_risk_free_rate():
         return 0.0425
 
 # --- FECHA DE VENCIMIENTO (para mes siguiente debemos ver el mes actual) --- 
-hoy = datatime.now()
-candidato1 = fecha_vencimiento(hoy.year, hoy.month)
+hoy = datetime.now()
+candidato1 = fecha_vencimiento_oro(hoy.year, hoy.month)
 if hoy.day < candidato1:
-vencimiento = candidato1
-else
-mes_mas_uno = hoy.month + 1 if hoy.month < 12 else 1
-anio = hoy.year if hoy.month < 12 else hoy.year + 1
-vencimiento = fecha_vencimiento_oro(anio, mes_mas_uno)
+    vencimiento = candidato1
+else:
+    mes_mas_uno = hoy.month + 1 if hoy.month < 12 else 1
+    anio = hoy.year if hoy.month < 12 else hoy.year + 1
+    vencimiento = fecha_vencimiento_oro(anio, mes_mas_uno)
 
 # --- MOTOR DE CÁLCULO ---
 @st.cache_data
-def calcular_call(S, K, r, T, sigma, beta, paso):
+def calcular_call(S, K, r, T, sigma, beta, paso, a):
     m = int(round(T / paso))
     if m <= 0: m = 1
     dt = T / m
@@ -94,7 +94,7 @@ col1, col2 = st.columns(2)
 with col1:
     beta = st.number_input("Beta", value=0.5, step=0.01)
     st.caption("ℹ️ Este valor se corresponde con el modelo de Black-Scholes")
-    sigma_def = st.session_state.market_cache['sigma'] if st.session_state.market_cache else 0.16
+    sigma_def = 0.16
     sigma = st.number_input("Sigma", value=sigma_def, format="%.2f")
     st.caption("ℹ️ volatilidad: valor conservador basado en datos pasados")
 
