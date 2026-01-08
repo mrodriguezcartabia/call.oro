@@ -99,7 +99,7 @@ with col1:
     st.caption("ℹ️ volatilidad: valor conservador basado en datos pasados")
 
 with col2:
-    param_a_def = 1
+    param_a_def = 1.0
     param_a = st.number_input("a", value=param_a_def, step=0.01)
     st.caption("ℹ️ valor de a")
     # strike_init = round(precio_s / 5) * 5
