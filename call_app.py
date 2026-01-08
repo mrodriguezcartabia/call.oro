@@ -7,6 +7,78 @@ import matplotlib.pyplot as plt
 from datetime import datetime
 from scipy.special import comb
 
+# --- LÓGICA DE IDIOMA ---
+params = st.query_params
+idioma = params.get("lang", "en") # Por defecto inglés
+
+texts = {
+    "en": {
+        "title": "Gold Call Valuator",
+        "beta_lbl": "Beta",
+        "beta_cap": "ℹ️ This value corresponds to the Black-Scholes model",
+        "sigma_lbl": "Sigma (Volatility)",
+        "sigma_cap": "ℹ️ Conservative value based on past data",
+        "alpha_lbl": "Alpha (a)",
+        "alpha_cap": "ℹ️ Data from GoldAPI",
+        "tasa_lbl": "Risk-Free Rate",
+        "tasa_cap": "ℹ️ Source: FRED",
+        "venc_msg": "Expires in {} days ({})",
+        "val_act": "Current Price",
+        "strike_atm": "Strike (At-the-money)",
+        "paso_temp": "Time Step",
+        "recalc": "RECALCULATE",
+        "msg_loading": "Running binomial model...",
+        "msg_success": "Calculation complete!",
+        "graph_title": "Call Price (C) vs Strike (K)",
+        "graph_y": "Option Price (C)",
+        "info_init": "Click RECALCULATE to generate the visualization."
+    },
+    "es": {
+        "title": "Valuador de Call de Oro",
+        "beta_lbl": "Beta",
+        "beta_cap": "ℹ️ Este valor corresponde al modelo de Black-Scholes",
+        "sigma_lbl": "Sigma (Volatilidad)",
+        "sigma_cap": "ℹ️ Valor conservador basado en datos pasados",
+        "alpha_lbl": "Alfa (a)",
+        "alpha_cap": "ℹ️ Datos de GoldAPI",
+        "tasa_lbl": "Tasa Libre de Riesgo",
+        "tasa_cap": "ℹ️ Fuente: FRED",
+        "venc_msg": "Vencimiento en {} días ({})",
+        "val_act": "Valor Actual",
+        "strike_atm": "Strike At-the-money",
+        "paso_temp": "Paso Temporal",
+        "recalc": "RECALCULAR",
+        "msg_loading": "Ejecutando modelo binomial...",
+        "msg_success": "¡Cálculo finalizado!",
+        "graph_title": "Gráfico de Precio de Call (C) vs Strike (K)",
+        "graph_y": "Precio de la Opción (C)",
+        "info_init": "Presiona RECALCULAR para generar la visualización."
+    },
+    "pt": {
+        "title": "Valiador de Call de Ouro",
+        "beta_lbl": "Beta",
+        "beta_cap": "ℹ️ Este valor corresponde ao modelo Black-Scholes",
+        "sigma_lbl": "Sigma (Volatilidade)",
+        "sigma_cap": "ℹ️ Valor conservador baseado em dados passados",
+        "alpha_lbl": "Alfa (a)",
+        "alpha_cap": "ℹ️ Dados da GoldAPI",
+        "tasa_lbl": "Taxa Livre de Risco",
+        "tasa_cap": "ℹ️ Fonte: FRED",
+        "venc_msg": "Expira em {} dias ({})",
+        "val_act": "Preço Atual",
+        "strike_atm": "Strike At-the-money",
+        "paso_temp": "Passo Temporal",
+        "recalc": "RECALCULAR",
+        "msg_loading": "Executando modelo binomial...",
+        "msg_success": "Cálculo concluído!",
+        "graph_title": "Gráfico de Preço da Call (C) vs Strike (K)",
+        "graph_y": "Preço da Opção (C)",
+        "info_init": "Clique em RECALCULAR para gerar a visualização."
+    }
+}
+
+t = texts.get(idioma, texts["en"])
+
 # --- CONFIGURACIÓN DE PÁGINA ---
 st.set_page_config(page_title="Valuador de call de oro", layout="wide")
 
@@ -104,16 +176,16 @@ with col2:
     #precio_s = st.number_input("Precio", value=s_def, format="%.2f")
     
     tasa_r = st.number_input("Tasa", value=st.session_state.tasa_cache, format="%.4f")
-    st.caption("ℹ️ fuente: FRED")
+    st.caption(t["ℹ️ fuente: FRED"])
 
 # --- BOTONES DE CONTROL Y GRÁFICO ---
 herramientas, grafico = st.columns([1, 3])
 with herramientas:
     st.info(f" Vencimiento en {dias} días ({vencimiento})")
     st.metric(label="Valor actual", value=f"{precio_s}")
-    st.caption("ℹ️ Fuente: GoldAPI")
+    st.caption(t["ℹ️ Fuente: GoldAPI"])
     st.metric(label="Strike at the money", value=f"{strike}")
-    st.metric(label="Paso temporal", value=f"{st.session_state.paso_val:.8f}")
+    st.metric(label=t["Paso temporal"], value=f"{st.session_state.paso_val:.8f}")
     boton1, boton2 = st.columns([1, 1])
     with boton1:
         if st.button("x10⁻¹"):
@@ -123,7 +195,7 @@ with herramientas:
         if st.button("Reset Paso"):
             st.session_state.paso_val = VALOR_PASO_ORIGINAL
             st.rerun()
-    btn_recalcular = st.button("RECALCULAR", type="primary", use_container_width=True)
+    btn_recalcular = st.button(t["recalc"], type="primary", use_container_width=True)
     
 # --- LÓGICA DE CÁLCULO BAJO DEMANDA ---
 if st.session_state.data_grafico is None or btn_recalcular:
