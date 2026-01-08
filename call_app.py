@@ -87,7 +87,7 @@ if 'data_grafico' not in st.session_state:
 # --- INTERFAZ ---
 dias = (vencimiento - hoy.date()).days 
 T = dias/ 365.0
-precio_s = get_market_data_goldapi()
+precio_s = st.session_state.market_cache
 strike = round(precio_s / 5) * 5
 
 col1, col2 = st.columns(2)
