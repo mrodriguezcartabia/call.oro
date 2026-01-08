@@ -93,37 +93,36 @@ strike = round(precio_s / 5) * 5
 col1, col2 = st.columns(2)
 with col1:
     beta = st.number_input("Beta", value=0.5, step=0.01)
-    st.caption("ℹ️ Este valor se corresponde con el modelo de Black-Scholes")
     sigma_def = 0.16
     sigma = st.number_input("Sigma", value=sigma_def, format="%.2f")
-    st.caption("ℹ️ volatilidad: valor conservador basado en datos pasados")
+    st.caption("ℹ️ Basada en datos pasados (valor conservador)")
 
 with col2:
     param_a_def = 1.0
-    param_a = st.number_input("a", value=param_a_def, step=0.01)
-    st.caption("ℹ️ valor de a")
-    # strike_init = round(precio_s / 5) * 5
-    # strike_k_input = st.number_input("Strike", value=float(strike_init), step=5.0)
-    # st.caption("ℹ️ at the money")
+    param_a = st.number_input("Alpha", value=param_a_def, step=0.01)
     #s_def = st.session_state.market_cache['S'] if st.session_state.market_cache else 2000.0
     #precio_s = st.number_input("Precio", value=s_def, format="%.2f")
-    st.caption("ℹ️ datos tomados de GoldAPI")
+    
     tasa_r = st.number_input("Tasa", value=st.session_state.tasa_cache, format="%.4f")
     st.caption("ℹ️ fuente: FRED")
-    # st.text_input("Paso", value=f"{st.session_state.paso_val:.8f}", disabled=True)
-    # st.caption("ℹ️ use los botones inferiores para modificar el paso")
-
-st.info(f" Vencimiento en {dias} días ({vencimiento})")
 
 # --- BOTONES DE CONTROL Y GRÁFICO ---
-botones, grafico = st.columns([1, 3])
-with botones:
-    if st.button("x10⁻¹"):
-        st.session_state.paso_val *= 0.1
-        st.rerun()
-    if st.button("Reset Paso"):
-        st.session_state.paso_val = VALOR_PASO_ORIGINAL
-        st.rerun()
+herramientas, grafico = st.columns([1, 3])
+with herramientas:
+    st.info(f" Vencimiento en {dias} días ({vencimiento})")
+    st.metric(label="Valor actual", value=f"{precio_s}")
+    st.caption("ℹ️ Fuente: GoldAPI")
+    st.metric(label="Strike at the money", value=f"{strike}")
+    st.metric(label="Paso temporal", value=f"{st.session_state.paso_val:.8f}")
+    boton1, boton2 = st.columns([1, 1])
+    with boton1:
+        if st.button("x10⁻¹"):
+            st.session_state.paso_val *= 0.1
+            st.rerun()
+    with boton2:
+        if st.button("Reset Paso"):
+            st.session_state.paso_val = VALOR_PASO_ORIGINAL
+            st.rerun()
     btn_recalcular = st.button("RECALCULAR", type="primary", use_container_width=True)
     
 # --- LÓGICA DE CÁLCULO BAJO DEMANDA ---
