@@ -47,7 +47,7 @@ def get_fred_risk_free_rate():
 # --- FECHA DE VENCIMIENTO (para mes siguiente debemos ver el mes actual) --- 
 hoy = datetime.now()
 candidato1 = fecha_vencimiento_oro(hoy.year, hoy.month)
-if hoy.day() < candidato1:
+if hoy.date() < candidato1:
     vencimiento = candidato1
 else:
     mes_mas_uno = hoy.month + 1 if hoy.month < 12 else 1
