@@ -21,7 +21,7 @@ def get_market_data_goldapi():
         if 'price' in data:
             return float(data['price'])
     except:
-        return None
+        return 4000 #mensaje alerta
 
 @st.cache_data(ttl=86400)
 def fecha_vencimiento_oro(year, month):
@@ -56,14 +56,14 @@ vencimiento = fecha_vencimiento_oro(anio, mes_mas_uno)
 
 # --- MOTOR DE CÁLCULO ---
 @st.cache_data
-def calcular_call_crr(S, K, r, T, sigma, beta, paso):
+def calcular_call(S, K, r, T, sigma, beta, paso):
     m = int(round(T / paso))
     if m <= 0: m = 1
     dt = T / m
-    u = np.exp((T**0.5) * sigma * (paso**beta))
-    d = 1 / u
-    a = np.exp(r * dt)
-    p = (a - d) / (u - d)
+    u = np.exp(a * (T**0.5) * sigma * (paso**beta))
+    d = u**(-1/a**2)
+    tasa = np.exp(r * dt)
+    p = (tasa - d) / (u - d)
     p = max(min(p, 1.0), 0.0)
     suma_binomial = 0
     for k in range(m + 1):
@@ -87,6 +87,8 @@ if 'data_grafico' not in st.session_state:
 # --- INTERFAZ ---
 dias = (vencimiento - hoy.date()).days 
 T = dias/ 365.0
+precio_s = get_market_data_goldapi()
+strike = round(precio_s / 5) * 5
 
 col1, col2 = st.columns(2)
 with col1:
@@ -97,11 +99,14 @@ with col1:
     st.caption("ℹ️ volatilidad: valor conservador basado en datos pasados")
 
 with col2:
+    a_def = 1
+    sigma = st.number_input("a", value=a_def, step=0.01)
+    st.caption("ℹ️ valor de a")
     # strike_init = round(precio_s / 5) * 5
     # strike_k_input = st.number_input("Strike", value=float(strike_init), step=5.0)
     # st.caption("ℹ️ at the money")
-    s_def = st.session_state.market_cache['S'] if st.session_state.market_cache else 2000.0
-    precio_s = st.number_input("Precio", value=s_def, format="%.2f")
+    #s_def = st.session_state.market_cache['S'] if st.session_state.market_cache else 2000.0
+    #precio_s = st.number_input("Precio", value=s_def, format="%.2f")
     st.caption("ℹ️ datos tomados de GoldAPI")
     tasa_r = st.number_input("Tasa", value=st.session_state.tasa_cache, format="%.4f")
     st.caption("ℹ️ fuente: FRED")
@@ -128,10 +133,10 @@ with c_rec:
 if st.session_state.data_grafico is None or btn_recalcular:
     # Indicador de carga activo durante el proceso matemático
     with st.spinner('Ejecutando modelo binomial...'):
-        rango_strikes = np.arange(strike_k_input - 15, strike_k_input + 20, 5)
+        rango_strikes = np.arange(strike - 35, strike + 40, 5)
         valores_c = []
         for k in rango_strikes:
-            c = calcular_call_crr(precio_s, k, tasa_r, T, sigma, beta, st.session_state.paso_val)
+            c = calcular_call(precio_s, k, tasa_r, T, sigma, beta, st.session_state.paso_val)
             valores_c.append(c)
         st.session_state.data_grafico = (rango_strikes, valores_c)
     # Mensaje temporal de éxito
