@@ -19,9 +19,9 @@ texts = {
         "sigma_lbl": "Sigma (Volatility)",
         "sigma_cap": "ℹ️ Conservative value based on past data",
         "alpha_lbl": "Alpha (a)",
-        "alpha_cap": "ℹ️ Data from GoldAPI",
+        "fuente_precio": "ℹ️ Data from GoldAPI",
         "tasa_lbl": "Risk-Free Rate",
-        "tasa_cap": "ℹ️ Source: FRED",
+        "fuente_tasa": "ℹ️ Source: FRED",
         "venc_msg": "Expires in {} days ({})",
         "val_act": "Current Price",
         "strike_atm": "Strike (At-the-money)",
@@ -40,9 +40,9 @@ texts = {
         "sigma_lbl": "Sigma (Volatilidad)",
         "sigma_cap": "ℹ️ Valor conservador basado en datos pasados",
         "alpha_lbl": "Alfa (a)",
-        "alpha_cap": "ℹ️ Datos de GoldAPI",
+        "fuente_precio": "ℹ️ Datos de GoldAPI",
         "tasa_lbl": "Tasa Libre de Riesgo",
-        "tasa_cap": "ℹ️ Fuente: FRED",
+        "fuente_tasa": "ℹ️ Fuente: FRED",
         "venc_msg": "Vencimiento en {} días ({})",
         "val_act": "Valor Actual",
         "strike_atm": "Strike At-the-money",
@@ -61,9 +61,9 @@ texts = {
         "sigma_lbl": "Sigma (Volatilidade)",
         "sigma_cap": "ℹ️ Valor conservador baseado em dados passados",
         "alpha_lbl": "Alfa (a)",
-        "alpha_cap": "ℹ️ Dados da GoldAPI",
+        "fuente_precio": "ℹ️ Dados da GoldAPI",
         "tasa_lbl": "Taxa Livre de Risco",
-        "tasa_cap": "ℹ️ Fonte: FRED",
+        "fuente_tasa": "ℹ️ Fonte: FRED",
         "venc_msg": "Expira em {} dias ({})",
         "val_act": "Preço Atual",
         "strike_atm": "Strike At-the-money",
@@ -176,16 +176,16 @@ with col2:
     #precio_s = st.number_input("Precio", value=s_def, format="%.2f")
     
     tasa_r = st.number_input("Tasa", value=st.session_state.tasa_cache, format="%.4f")
-    st.caption(t["ℹ️ fuente: FRED"])
+    st.caption(t["fuente_tasa"])
 
 # --- BOTONES DE CONTROL Y GRÁFICO ---
 herramientas, grafico = st.columns([1, 3])
 with herramientas:
     st.info(f" Vencimiento en {dias} días ({vencimiento})")
     st.metric(label="Valor actual", value=f"{precio_s}")
-    st.caption(t["ℹ️ Fuente: GoldAPI"])
+    st.caption(t["fuente_precio"])
     st.metric(label="Strike at the money", value=f"{strike}")
-    st.metric(label=t["Paso temporal"], value=f"{st.session_state.paso_val:.8f}")
+    st.metric(label=t["paso_temp"], value=f"{st.session_state.paso_val:.8f}")
     boton1, boton2 = st.columns([1, 1])
     with boton1:
         if st.button("x10⁻¹"):
