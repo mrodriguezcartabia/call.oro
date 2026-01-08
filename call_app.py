@@ -56,12 +56,12 @@ else:
 
 # --- MOTOR DE CÁLCULO ---
 @st.cache_data
-def calcular_call(S, K, r, T, sigma, beta, paso, a):
+def calcular_call(S, K, r, T, sigma, beta, paso, param_a):
     m = int(round(T / paso))
     if m <= 0: m = 1
     dt = T / m
-    u = np.exp(a * (T**0.5) * sigma * (paso**beta))
-    d = u**(-1/a**2)
+    u = np.exp(param_a * (T**0.5) * sigma * (paso**beta))
+    d = u**(-1/param_a**2)
     tasa = np.exp(r * dt)
     p = (tasa - d) / (u - d)
     p = max(min(p, 1.0), 0.0)
@@ -99,8 +99,8 @@ with col1:
     st.caption("ℹ️ volatilidad: valor conservador basado en datos pasados")
 
 with col2:
-    a_def = 1
-    a = st.number_input("a", value=a_def, step=0.01)
+    param_a_def = 1
+    param_a = st.number_input("a", value=param_a_def, step=0.01)
     st.caption("ℹ️ valor de a")
     # strike_init = round(precio_s / 5) * 5
     # strike_k_input = st.number_input("Strike", value=float(strike_init), step=5.0)
@@ -136,7 +136,7 @@ if st.session_state.data_grafico is None or btn_recalcular:
         rango_strikes = np.arange(strike - 35, strike + 40, 5)
         valores_c = []
         for k in rango_strikes:
-            c = calcular_call(precio_s, k, tasa_r, T, sigma, beta, st.session_state.paso_val, a)
+            c = calcular_call(precio_s, k, tasa_r, T, sigma, beta, st.session_state.paso_val, param_a)
             valores_c.append(c)
         st.session_state.data_grafico = (rango_strikes, valores_c)
     # Mensaje temporal de éxito
