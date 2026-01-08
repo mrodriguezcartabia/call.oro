@@ -8,7 +8,7 @@ from datetime import datetime
 from scipy.special import comb
 
 # --- CONFIGURACIÓN DE PÁGINA ---
-st.set_page_config(page_title="Valuador de Opciones Oro (Binomial)", layout="wide")
+st.set_page_config(page_title="Valuador de call de oro", layout="wide")
 
 # --- FUNCIONES DE OBTENCIÓN DE DATOS ---
 @st.cache_data(ttl=3600)
@@ -19,10 +19,19 @@ def get_market_data_goldapi():
         response = requests.get("https://www.goldapi.io/api/XAU/USD", headers=headers)
         data = response.json()
         if 'price' in data:
-            return {"S": float(data['price']), "sigma": 0.16}
-        return None
+            return float(data['price'])
     except:
         return None
+
+@st.cache_data(ttl=86400)
+def fecha_vencimiento_oro(year, month):
+    try:
+        cme = mcal.get_calendar('CME_Total')
+        last_day = pd.Period(f"{year}-{month}").to_timestamp(how='end')
+        schedule = cme.schedule(start_date=f"{year}-{month}-01", end_date=last_day)
+        return schedule.iloc[-4].name.date()
+    except:
+        return datetime(year, month, 25).date() #agregar alerta
 
 @st.cache_data(ttl=3600)
 def get_fred_risk_free_rate():
@@ -35,17 +44,15 @@ def get_fred_risk_free_rate():
     except:
         return 0.0425
 
-@st.cache_data(ttl=86400)
-def fecha_vencimiento_oro(year, month):
-    try:
-        cme = mcal.get_calendar('CME_Total')
-        target_month = month - 1 if month > 1 else 12
-        target_year = year if month > 1 else year - 1
-        last_day = pd.Period(f"{target_year}-{target_month}").to_timestamp(how='end')
-        schedule = cme.schedule(start_date=f"{target_year}-{target_month}-01", end_date=last_day)
-        return schedule.iloc[-4].name.date()
-    except:
-        return datetime(year, month, 25).date()
+# --- FECHA DE VENCIMIENTO (para mes siguiente debemos ver el mes actual) --- 
+hoy = datatime.now()
+candidato1 = fecha_vencimiento(hoy.year, hoy.month)
+if hoy.day < candidato1:
+vencimiento = candidato1
+else
+mes_mas_uno = hoy.month + 1 if hoy.month < 12 else 1
+anio = hoy.year if hoy.month < 12 else hoy.year + 1
+vencimiento = fecha_vencimiento_oro(anio, mes_mas_uno)
 
 # --- MOTOR DE CÁLCULO ---
 @st.cache_data
@@ -78,12 +85,8 @@ if 'data_grafico' not in st.session_state:
     st.session_state.data_grafico = None
 
 # --- INTERFAZ ---
-
-hoy = datetime.now()
-mes_contrato = hoy.month + 1 if hoy.month < 12 else 1
-anio_contrato = hoy.year if hoy.month < 12 else hoy.year + 1
-vencimiento_dt = fecha_vencimiento_oro(anio_contrato, mes_contrato)
-T = (vencimiento_dt - hoy.date()).days / 365.0
+dias = (vencimiento - hoy.date()).days 
+T = dias/ 365.0
 
 col1, col2 = st.columns(2)
 with col1:
@@ -92,18 +95,20 @@ with col1:
     sigma_def = st.session_state.market_cache['sigma'] if st.session_state.market_cache else 0.16
     sigma = st.number_input("Sigma", value=sigma_def, format="%.2f")
     st.caption("ℹ️ volatilidad: valor conservador basado en datos pasados")
+
+with col2:
+    # strike_init = round(precio_s / 5) * 5
+    # strike_k_input = st.number_input("Strike", value=float(strike_init), step=5.0)
+    # st.caption("ℹ️ at the money")
     s_def = st.session_state.market_cache['S'] if st.session_state.market_cache else 2000.0
     precio_s = st.number_input("Precio", value=s_def, format="%.2f")
     st.caption("ℹ️ datos tomados de GoldAPI")
-
-with col2:
-    strike_init = round(precio_s / 5) * 5
-    strike_k_input = st.number_input("Strike", value=float(strike_init), step=5.0)
-    st.caption("ℹ️ at the money")
     tasa_r = st.number_input("Tasa", value=st.session_state.tasa_cache, format="%.4f")
     st.caption("ℹ️ fuente: FRED")
-    st.text_input("Paso", value=f"{st.session_state.paso_val:.8f}", disabled=True)
-    st.caption("ℹ️ use los botones inferiores para modificar el paso")
+    # st.text_input("Paso", value=f"{st.session_state.paso_val:.8f}", disabled=True)
+    # st.caption("ℹ️ use los botones inferiores para modificar el paso")
+
+st.info(f" Vencimiento en {dias} días ({vencimiento})")
 
 # Botones de control
 c_p1, c_p2, c_rec = st.columns([1, 1, 2])
@@ -117,8 +122,6 @@ with c_p2:
         st.rerun()
 with c_rec:
     btn_recalcular = st.button("RECALCULAR", type="primary", use_container_width=True)
-
-st.info(f" **Vencimiento estimado:** {vencimiento_dt} | **T:** {T:.4f} años")
 
 # --- LÓGICA DE CÁLCULO BAJO DEMANDA ---
 
