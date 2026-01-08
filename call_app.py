@@ -115,21 +115,18 @@ with col2:
 
 st.info(f" Vencimiento en {dias} días ({vencimiento})")
 
-# Botones de control
-c_p1, c_p2, c_rec = st.columns([1, 1, 2])
-with c_p1:
+# --- BOTONES DE CONTROL Y GRÁFICO ---
+botones, grafico = st.columns([1, 3])
+with botones:
     if st.button("x10⁻¹"):
         st.session_state.paso_val *= 0.1
         st.rerun()
-with c_p2:
     if st.button("Reset Paso"):
         st.session_state.paso_val = VALOR_PASO_ORIGINAL
         st.rerun()
-with c_rec:
     btn_recalcular = st.button("RECALCULAR", type="primary", use_container_width=True)
-
+    
 # --- LÓGICA DE CÁLCULO BAJO DEMANDA ---
-
 if st.session_state.data_grafico is None or btn_recalcular:
     # Indicador de carga activo durante el proceso matemático
     with st.spinner('Ejecutando modelo binomial...'):
@@ -142,15 +139,16 @@ if st.session_state.data_grafico is None or btn_recalcular:
     # Mensaje temporal de éxito
     if btn_recalcular:
         st.toast("¡Cálculo finalizado!", icon="✅")
+        
+# --- COLOCAMOS EL GRÁFICO ---
+with grafico:
+    strikes, calls = st.session_state.data_grafico
 
-# --- GRÁFICO ---
-strikes, calls = st.session_state.data_grafico
-
-st.subheader("Gráfico de Precio de Call (C) vs Strike (K)")
-fig, ax = plt.subplots(figsize=(8, 3.5))
-ax.plot(strikes, calls, marker='o', color='#DAA520', linewidth=2)
-ax.fill_between(strikes, calls, alpha=0.1, color='#DAA520')
-ax.set_xlabel("Strike (K)")
-ax.set_ylabel("Precio de la Opción (C)")
-ax.grid(True, linestyle='--', alpha=0.6)
-st.pyplot(fig)
+    st.subheader("Gráfico de Precio de Call (C) vs Strike (K)")
+    fig, ax = plt.subplots(figsize=(8, 3.5))
+    ax.plot(strikes, calls, marker='o', color='#DAA520', linewidth=2)
+    ax.fill_between(strikes, calls, alpha=0.1, color='#DAA520')
+    ax.set_xlabel("Strike (K)")
+    ax.set_ylabel("Precio de la Opción (C)")
+    ax.grid(True, linestyle='--', alpha=0.6)
+    st.pyplot(fig)
