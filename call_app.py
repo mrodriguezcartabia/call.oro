@@ -47,7 +47,7 @@ def get_fred_risk_free_rate():
 # --- FECHA DE VENCIMIENTO (para mes siguiente debemos ver el mes actual) --- 
 hoy = datetime.now()
 candidato1 = fecha_vencimiento_oro(hoy.year, hoy.month)
-if hoy.day < candidato1:
+if hoy.day() < candidato1:
     vencimiento = candidato1
 else:
     mes_mas_uno = hoy.month + 1 if hoy.month < 12 else 1
@@ -100,7 +100,7 @@ with col1:
 
 with col2:
     a_def = 1
-    sigma = st.number_input("a", value=a_def, step=0.01)
+    a = st.number_input("a", value=a_def, step=0.01)
     st.caption("ℹ️ valor de a")
     # strike_init = round(precio_s / 5) * 5
     # strike_k_input = st.number_input("Strike", value=float(strike_init), step=5.0)
@@ -136,7 +136,7 @@ if st.session_state.data_grafico is None or btn_recalcular:
         rango_strikes = np.arange(strike - 35, strike + 40, 5)
         valores_c = []
         for k in rango_strikes:
-            c = calcular_call(precio_s, k, tasa_r, T, sigma, beta, st.session_state.paso_val)
+            c = calcular_call(precio_s, k, tasa_r, T, sigma, beta, st.session_state.paso_val, a)
             valores_c.append(c)
         st.session_state.data_grafico = (rango_strikes, valores_c)
     # Mensaje temporal de éxito
