@@ -108,18 +108,14 @@ div.stButton > button[key="btn-reset"] p {
     margin-bottom: 10px !important;
     font-size: 0.75rem !important;
 }
-/* 10. Estilo de tarjeta para ingreso manual (Sin bloqueo total de pantalla) */
+/* 10. Tarjeta de ingreso manual centrada */
 .overlay-card-static {
     background-color: #1e293b;
     padding: 30px;
     border-radius: 15px;
     border: 2px solid #B8860B;
-    margin-top: 20%;
+    margin-top: 15vh; /* La baja un poco del tope */
     margin-bottom: 20px;
     box-shadow: 0 10px 25px rgba(0,0,0,0.5);
-}
-
-/* Asegurar que el input manual se vea bien */
-div[data-testid="stNumberInput"] label {
-    color: #cbd5e0 !important;
+    text-align: center;
 }
