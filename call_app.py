@@ -232,10 +232,19 @@ with col2:
 herramientas, grafico = st.columns([1, 3])
 with herramientas:
     st.info(t["venc_msg"].format(dias, vencimiento))
-    st.metric(label=t["val_act"], value=f"{precio_s}")
+    st.markdown(f"""
+        <div class="custom-metric-container">
+            <span class="metric-label">{t["val_act"]}:</span>
+            <span class="metric-value-small">{precio_s}</span>
+        </div>
+    """, unsafe_allow_html=True)
     st.caption(t["fuente_precio"])
-    #st.metric(label="Strike at the money", value=f"{strike}")
-    st.metric(label=t["paso_temp"], value=f"{st.session_state.paso_val:.8f}")
+    st.markdown(f"""
+        <div class="custom-metric-container">
+            <span class="metric-label">{t["paso_temp"]}:</span>
+            <span class="metric-value-small">{st.session_state.paso_val:.8f}</span>
+        </div>
+    """, unsafe_allow_html=True)
 
     # Botones de paso temporal
     boton1, boton2 = st.columns([1, 2])
@@ -244,7 +253,7 @@ with herramientas:
             st.session_state.paso_val *= 0.1
             st.rerun()
     with boton2:
-        if st.button(t["reset"]):
+        if st.button(t["reset"], key="btn-reset"):
             st.session_state.paso_val = VALOR_PASO_ORIGINAL
             st.rerun()
             
