@@ -116,7 +116,7 @@ div.stButton > button[key="btn-reset"] p {
     width: 100vw;
     height: 100vh;
     background-color: rgba(0, 0, 0, 0.85); /* Fondo oscuro */
-    z-index: 9999;
+    z-index: 9998;
     display: flex;
     flex-direction: column;
     justify-content: center;
@@ -130,6 +130,10 @@ div.stButton > button[key="btn-reset"] p {
     border: 2px solid #B8860B;
     text-align: center;
     max-width: 500px;
+    z-index: 9999; /* contenedor visible */
+}
+.blocked-app [data-testid="stMarkdownContainer"] h2 {
+    margin-bottom: 0.5rem;
 }
 
 /* Centrar el input manual dentro del bloqueo */
