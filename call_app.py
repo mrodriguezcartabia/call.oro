@@ -121,8 +121,9 @@ def get_market_data_goldapi():
         data = response.json()
         if 'price' in data:
             return float(data['price'])
+        return None
     except:
-        return 4000.0 #mensaje alerta
+        return Nono #mensaje alerta
 
 @st.cache_data(ttl=86400)
 def fecha_vencimiento_oro(year, month):
@@ -207,6 +208,35 @@ if 'precios_mercado' not in st.session_state:
     st.session_state.precios_mercado = [0.0] * 6
 
 # --- INTERFAZ ---
+placeholder = st.empty()
+
+# Intentamos obtener el precio de la sesión o de la API
+# --- INTERFAZ Y LÓGICA DE BLOQUEO ---
+placeholder = st.empty()
+
+if st.session_state.market_cache is None:
+    with placeholder.container():
+        # Aquí solo inyectamos el div con la clase CSS
+        st.markdown(f"""
+            <div class="blocked-app">
+                <div class="overlay-card">
+                    <h2 style="color: white;">{t['msg_error_api']}</h2>
+                    <p style="color: #cbd5e0;">{t['msg_manual_price']}</p>
+                </div>
+            </div>
+        """, unsafe_allow_html=True)
+        
+        # El input y el botón aparecen debajo del cartel
+        precio_manual = st.number_input(t["val_act"], value=0.0, step=0.1, key="manual_price_input")
+        if st.button(t["recalc"], key="btn_start_manual"):
+            if precio_manual > 0:
+                st.session_state.market_cache = precio_manual
+                st.rerun()
+            else:
+                st.error("Precio inválido")
+        st.stop() 
+
+# Si llegamos aquí, ya hay un precio (sea por API o manual)
 dias = (vencimiento - hoy.date()).days 
 T = dias/ 365.0
 # Si la caché tiene un None por error previo,
