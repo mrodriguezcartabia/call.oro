@@ -1,0 +1,39 @@
+/* 1. Estilo para las métricas (Precio del Oro y Paso Temporal) */
+[data-testid="stMetricValue"] {
+    font-size: 38px !important;
+    color: #DAA520 !important; /* Color Dorado */
+    font-weight: bold;
+}
+
+[data-testid="stMetricLabel"] {
+    font-size: 18px !important;
+    font-weight: 500;
+}
+
+/* 2. Personalización de los botones Primary (Recalcular y Hallar Sigma) */
+div.stButton > button[kind="primary"] {
+    background-color: #DAA520;
+    border-color: #DAA520;
+    color: white;
+    font-weight: bold;
+    border-radius: 8px;
+    height: 3em;
+}
+
+div.stButton > button[kind="primary"]:hover {
+    background-color: #B8860B; /* Dorado más oscuro al pasar el mouse */
+    border-color: #B8860B;
+}
+
+/* 3. Estilo para el botón del Popover (Ingresar datos) */
+div[data-testid="stPopover"] > button {
+    border: 1px solid #DAA520;
+    color: #DAA520;
+    font-weight: 600;
+}
+
+/* 4. Estilo para las tarjetas de información (Vencimiento) */
+div.stAlert {
+    border-radius: 10px;
+    border-left: 5px solid #DAA520;
+}
