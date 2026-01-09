@@ -55,3 +55,56 @@ div[data-testid="stPopover"] > button {
     border: 1px solid rgba(255, 255, 255, 0.1) !important;
     border-radius: 8px;
 }
+
+/* 6. Contenedor para alinear etiqueta y valor en la misma línea */
+.custom-metric-container {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 8px 12px;
+    background-color: rgba(255, 255, 255, 0.05);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    border-radius: 6px;
+    margin-bottom: 4px;
+}
+
+/* 7. Estilo de la etiqueta (izquierda) */
+.metric-label {
+    font-size: 0.9rem !important;
+    font-weight: 500;
+    color: #cbd5e0;
+}
+
+/* 8. Estilo del valor (derecha) */
+.metric-value-small {
+    font-size: 1rem !important;
+    font-weight: 700;
+    color: #DAA520; /* Color dorado para el precio */
+    font-family: 'Courier New', Courier, monospace;
+}
+
+/* 9. --- BOTÓN RESET PEQUEÑO --- */
+/* Reducimos el tamaño del texto específicamente para el botón con key 'btn-reset' */
+div.stButton > button[key="btn-reset"] {
+    height: 1.5rem;
+    padding-top: 0;
+    padding-bottom: 0;
+    border: 1px solid rgba(255, 255, 255, 0.2);
+}
+
+div.stButton > button[key="btn-reset"] p {
+    font-size: 10px !important;
+    color: #a0aec0 !important;
+}
+
+/* Ajustes generales de inputs para que todo sea más compacto */
+.stNumberInput div div input {
+    padding-top: 2px !important;
+    padding-bottom: 2px !important;
+}
+
+/* Quitar espacio extra de los captions */
+.stCaptionContainer {
+    margin-bottom: 10px !important;
+    font-size: 0.75rem !important;
+}
