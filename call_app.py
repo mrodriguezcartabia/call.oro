@@ -189,7 +189,7 @@ with herramientas:
     st.caption(t["fuente_precio"])
     #st.metric(label="Strike at the money", value=f"{strike}")
     st.metric(label=t["paso_temp"], value=f"{st.session_state.paso_val:.8f}")
-    boton1, boton2 = st.columns([1, 1])
+    boton1, boton2 = st.columns([1, 3])
     with boton1:
         if st.button("x10⁻¹"):
             st.session_state.paso_val *= 0.1
