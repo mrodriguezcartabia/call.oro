@@ -8,6 +8,12 @@ from datetime import datetime
 from scipy.special import comb
 from scipy.optimize import minimize_scalar
 
+# Debe estar al comienzo
+
+def guardar_manual():
+    if st.session_state.input_manual_temp:
+        st.session_state.market_cache = st.session_state.input_manual_temp     
+
 # --- LÓGICA DE IDIOMA ---
 params = st.query_params
 idioma = params.get("lang", "en") # Por defecto inglés
@@ -167,7 +173,7 @@ def hallar_sigma_optimo(precios_mercado, strikes, S, r, T, beta, paso, param_a):
     
     # Optimizamos una sola variable (sigma) en un rango de 1% a 200%
     res = minimize_scalar(error_cuadratico, bounds=(0.01, 2.0), method='bounded')
-    return res.x
+    return res.x 
 
 # --- FECHA DE VENCIMIENTO (para mes siguiente debemos ver el mes actual) --- 
 hoy = datetime.now()
@@ -218,7 +224,7 @@ if 'precios_mercado' not in st.session_state:
 
 # --- INTERFAZ ---
 # Intentamos obtener el precio de la sesión o de la API
-
+        
 if st.session_state.market_cache is None:
     _, center_col, _ = st.columns([1, 2, 1])
     
@@ -232,11 +238,11 @@ if st.session_state.market_cache is None:
         
         # 1. Usamos una clave diferente para el input temporal
         # 2. Al pulsar Enter, guardamos el valor inmediatamente
-        precio_temp = st.number_input(t["val_act"], value=None, key="input_manual_temp")
+        precio_temp = st.number_input(t["val_act"], value=None, placeholder="", key="input_manual_temp", on_change=guardar_manual)
         
         if st.button(t["recalc"], key="btn_start_manual", use_container_width=True, type="primary"):
+            guardar_manual()
             if precio_temp is not None and  precio_temp > 0:
-                st.session_state.market_cache = precio_temp # Guardamos en la caché real
                 st.rerun()
             else:
                 st.warning(t["msg_manual_price"])
@@ -246,8 +252,7 @@ if st.session_state.market_cache is None:
 # Si llegamos aquí, ya hay un precio (sea por API o manual)
 dias = (vencimiento - hoy.date()).days 
 T = dias/ 365.0
-# Si la caché tiene un None por error previo,
-precio_s = st.session_state.market_cache if st.session_state.market_cache is not None else 4000.0
+precio_s = float(st.session_state.market_cache) if st.session_state.market_cache is not None else       
 strike = round(precio_s / 5) * 5
 
 col1, col2 = st.columns(2)
@@ -260,8 +265,6 @@ with col1:
 
 with col2:
     beta = st.number_input("Beta", value=0.5, step=0.01)
-    #s_def = st.session_state.market_cache['S'] if st.session_state.market_cache else 2000.0
-    #precio_s = st.number_input(t["cal_act"], value=s_def, format="%.2f")
     tasa_r = st.number_input(t["tasa_lbl"], value=st.session_state.tasa_cache, format="%.4f")
     st.caption(t["fuente_tasa"])
 
