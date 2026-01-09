@@ -18,7 +18,7 @@ texts = {
         "beta_cap": "ℹ️ This value corresponds to the Black-Scholes model",
         "sigma_lbl": "Sigma (Volatility)",
         "sigma_cap": "ℹ️ Conservative value based on past data",
-        "alpha_lbl": "Alpha (a)",
+        "alpha_lbl": "Alpha",
         "fuente_precio": "ℹ️ Data from GoldAPI",
         "tasa_lbl": "Risk-Free Rate",
         "fuente_tasa": "ℹ️ Source: FRED",
@@ -31,7 +31,7 @@ texts = {
         "msg_loading": "Running binomial model...",
         "msg_success": "Calculation complete!",
         "graph_title": "Call Price (C) vs Strike (K)",
-        "graph_y": "Option Price (C)",
+        "graph_y": "Call Price",
         "info_init": "Click RECALCULATE to generate the visualization."
     },
     "es": {
@@ -40,7 +40,7 @@ texts = {
         "beta_cap": "ℹ️ Este valor corresponde al modelo de Black-Scholes",
         "sigma_lbl": "Sigma (Volatilidad)",
         "sigma_cap": "ℹ️ Valor conservador basado en datos pasados",
-        "alpha_lbl": "Alfa (a)",
+        "alpha_lbl": "Alfa",
         "fuente_precio": "ℹ️ Datos de GoldAPI",
         "tasa_lbl": "Tasa Libre de Riesgo",
         "fuente_tasa": "ℹ️ Fuente: FRED",
@@ -53,7 +53,7 @@ texts = {
         "msg_loading": "Ejecutando modelo binomial...",
         "msg_success": "¡Cálculo finalizado!",
         "graph_title": "Gráfico de Precio de Call (C) vs Strike (K)",
-        "graph_y": "Precio de la Opción (C)",
+        "graph_y": "Precio de la opción",
         "info_init": "Presiona RECALCULAR para generar la visualización."
     },
     "pt": {
@@ -62,7 +62,7 @@ texts = {
         "beta_cap": "ℹ️ Este valor corresponde ao modelo Black-Scholes",
         "sigma_lbl": "Sigma (Volatilidade)",
         "sigma_cap": "ℹ️ Valor conservador baseado em dados passados",
-        "alpha_lbl": "Alfa (a)",
+        "alpha_lbl": "Alfa",
         "fuente_precio": "ℹ️ Dados da GoldAPI",
         "tasa_lbl": "Taxa Livre de Risco",
         "fuente_tasa": "ℹ️ Fonte: FRED",
@@ -75,7 +75,7 @@ texts = {
         "msg_loading": "Executando modelo binomial...",
         "msg_success": "Cálculo concluído!",
         "graph_title": "Gráfico de Preço da Call (C) vs Strike (K)",
-        "graph_y": "Preço da Opção (C)",
+        "graph_y": "Preço da opção",
         "info_init": "Clique em RECALCULAR para gerar a visualização."
     }
 }
@@ -222,7 +222,7 @@ with grafico:
     fig, ax = plt.subplots(figsize=(8, 3.5))
     ax.plot(strikes, calls, marker='o', color='#DAA520', linewidth=2)
     ax.fill_between(strikes, calls, alpha=0.1, color='#DAA520')
-    ax.set_xlabel("Strike (K)")
+    ax.set_xlabel("Strike")
     ax.set_ylabel(t["graph_y"])
     ax.grid(True, linestyle='--', alpha=0.6)
     st.pyplot(fig)
