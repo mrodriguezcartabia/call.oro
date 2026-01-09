@@ -164,17 +164,16 @@ strike = round(precio_s / 5) * 5
 
 col1, col2 = st.columns(2)
 with col1:
-    beta = st.number_input("Beta", value=0.5, step=0.01)
+    param_a_def = 1.0
+    param_a = st.number_input("Alpha", value=param_a_def, step=0.01)
     sigma_def = 0.16
     sigma = st.number_input("Sigma", value=sigma_def, format="%.2f")
     st.caption("ℹ️ Basada en datos pasados (valor conservador)")
 
 with col2:
-    param_a_def = 1.0
-    param_a = st.number_input("Alpha", value=param_a_def, step=0.01)
+    beta = st.number_input("Beta", value=0.5, step=0.01)
     #s_def = st.session_state.market_cache['S'] if st.session_state.market_cache else 2000.0
     #precio_s = st.number_input("Precio", value=s_def, format="%.2f")
-    
     tasa_r = st.number_input("Tasa", value=st.session_state.tasa_cache, format="%.4f")
     st.caption(t["fuente_tasa"])
 
