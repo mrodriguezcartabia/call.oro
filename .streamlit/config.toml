@@ -1,6 +1,6 @@
 [theme]
-primaryColor = "#DAA520"
-backgroundColor = "#FFFFFF"
-secondaryBackgroundColor = "#F8F9FB"
-textColor = "#262730"
-font = "sans serif"
+primaryColor = "#5f6ac4"          # El violeta de tus botones y enlaces
+backgroundColor = "#0f172a"       # El fondo azul oscuro de tu HTML
+secondaryBackgroundColor = "#1e293b" # El color de tus "cards"
+textColor = "#e2e8f0"             # Gris claro de tu body
+font = "sans serif"               # Streamlit usará una fuente similar a Inter
