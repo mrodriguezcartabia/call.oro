@@ -244,26 +244,35 @@ with herramientas:
     with st.popover(t["lbl_ingresar"], use_container_width=True):
         st.write(t["lbl_mkt_info"])
         
-        rango_edicion = np.arange(strike - 15, strike + 15, 5)
-        
-        # Validamos que el tamaño coincida
-        if len(st.session_state.precios_mercado) != len(rango_edicion):
-            st.session_state.precios_mercado = [0.0] * len(rango_edicion)
+        # 1. Creamos un formulario interno
+        with st.form("form_mercado"):
+            rango_edicion = np.arange(strike - 15, strike + 15, 5)
             
-        df_editor = pd.DataFrame({
-            "Strike": rango_edicion, 
-            "Precio Call Mercado": st.session_state.precios_mercado
-        })
-        
-        edited_df = st.data_editor(
-            df_editor, 
-            hide_index=True, 
-            use_container_width=True,
-            num_rows="fixed",
-            column_config={"Strike": st.column_config.NumberColumn(disabled=True)}
-        )
-        # Guardamos los cambios
-        st.session_state.precios_mercado = edited_df["Precio Call Mercado"].tolist()
+            # Sincronización inicial
+            if len(st.session_state.precios_mercado) != len(rango_edicion):
+                st.session_state.precios_mercado = [0.0] * len(rango_edicion)
+                
+            df_editor = pd.DataFrame({
+                "Strike": rango_edicion, 
+                "Precio Call Mercado": st.session_state.precios_mercado
+            })
+            
+            # El editor dentro del formulario no dispara re-ejecuciones automáticas
+            edited_df = st.data_editor(
+                df_editor, 
+                hide_index=True, 
+                use_container_width=True,
+                num_rows="fixed",
+                column_config={"Strike": st.column_config.NumberColumn(disabled=True)}
+            )
+            
+            # 2. Botón para confirmar los cambios
+            submit_save = st.form_submit_button(t["lbl_cerrar"], use_container_width=True)
+            
+            if submit_save:
+                # Solo aquí guardamos los datos en el estado global
+                st.session_state.precios_mercado = edited_df["Precio Call Mercado"].tolist()
+                st.rerun() # Esto refresca el gráfico con los nuevos puntos rojos
 
     # Botón para hallar sigma (ahora queda debajo del popover)
     if st.button(t["lbl_hallar"], type="primary", use_container_width=True):
