@@ -162,7 +162,8 @@ if 'data_grafico' not in st.session_state:
 # --- INTERFAZ ---
 dias = (vencimiento - hoy.date()).days 
 T = dias/ 365.0
-precio_s = st.session_state.market_cache
+# Si la caché tiene un None por error previo,
+precio_s = st.session_state.market_cache if st.session_state.market_cache is not None else 4000.0
 strike = round(precio_s / 5) * 5
 
 col1, col2 = st.columns(2)
