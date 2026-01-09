@@ -108,36 +108,18 @@ div.stButton > button[key="btn-reset"] p {
     margin-bottom: 10px !important;
     font-size: 0.75rem !important;
 }
-/* 10.  Bloqueo de pantalla cuando falla la API */
-.blocked-app {
-    position: fixed;
-    top: 0;
-    left: 0;
-    width: 100vw;
-    height: 100vh;
-    background-color: rgba(0, 0, 0, 0.85); /* Fondo oscuro */
-    z-index: 9998;
-    display: flex;
-    flex-direction: column;
-    justify-content: center;
-    align-items: center;
-}
-
-.overlay-card {
-    background-color: #1e1e1e;
-    padding: 40px;
+/* 10. Estilo de tarjeta para ingreso manual (Sin bloqueo total de pantalla) */
+.overlay-card-static {
+    background-color: #1e293b;
+    padding: 30px;
     border-radius: 15px;
     border: 2px solid #B8860B;
-    text-align: center;
-    max-width: 500px;
-    z-index: 9999; /* contenedor visible */
-}
-.blocked-app [data-testid="stMarkdownContainer"] h2 {
-    margin-bottom: 0.5rem;
+    margin-top: 20%;
+    margin-bottom: 20px;
+    box-shadow: 0 10px 25px rgba(0,0,0,0.5);
 }
 
-/* Centrar el input manual dentro del bloqueo */
-.overlay-card div[data-testid="stNumberInput"] {
-    width: 100% !important;
-    margin-top: 20px;
+/* Asegurar que el input manual se vea bien */
+div[data-testid="stNumberInput"] label {
+    color: #cbd5e0 !important;
 }
