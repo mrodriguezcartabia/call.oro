@@ -96,7 +96,7 @@ def get_market_data_goldapi():
         if 'price' in data:
             return float(data['price'])
     except:
-        return 4000 #mensaje alerta
+        return 4000.0 #mensaje alerta
 
 @st.cache_data(ttl=86400)
 def fecha_vencimiento_oro(year, month):
@@ -108,7 +108,7 @@ def fecha_vencimiento_oro(year, month):
     except:
         return datetime(year, month, 25).date() #agregar alerta
 
-@st.cache_data(ttl=3600)
+@st.cache_data(ttl=86400)
 def get_fred_risk_free_rate():
     try:
         api_key = st.secrets["FRED_API_KEY"]
