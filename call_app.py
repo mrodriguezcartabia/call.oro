@@ -360,10 +360,6 @@ with herramientas:
             st.session_state.paso_val, param_a
         )
         st.session_state.sigma_hallado = sigma_fit
-        st.session_state.data_grafico = (strikes_actuales, [
-            calcular_call(precio_s, k, tasa_r, T, sigma_fit, beta, st.session_state.paso_val, param_a) 
-            for k in strikes_actuales
-        ])
         st.rerun()
 
     # Resultado del Sigma hallado
