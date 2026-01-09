@@ -232,7 +232,7 @@ if st.session_state.market_cache is None:
         
         # 1. Usamos una clave diferente para el input temporal
         # 2. Al pulsar Enter, guardamos el valor inmediatamente
-       precio_temp = st.number_input(t["val_act"], value=None, key="input_manual_temp")
+        precio_temp = st.number_input(t["val_act"], value=None, key="input_manual_temp")
         
         if st.button(t["recalc"], key="btn_start_manual", use_container_width=True, type="primary"):
             if precio_temp is not None and  precio_temp > 0:
@@ -348,6 +348,7 @@ with herramientas:
     # Resultado del Sigma hallado
     valor_sigma = f"{st.session_state.sigma_hallado:.5f}" if st.session_state.sigma_hallado else ""
     st.metric(label=t["lbl_res"], value=valor_sigma)
+
 # --- LÓGICA DE CÁLCULO BAJO DEMANDA ---
 if st.session_state.data_grafico is None or btn_recalcular:
     # Indicador de carga activo durante el proceso matemático
