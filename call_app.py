@@ -325,7 +325,7 @@ with grafico:
     
     # Curva del Modelo
     ax.plot(strikes, calls, marker='o', color='#DAA520', linewidth=2)
-    ax.fill_between(strikes, calls, alpha=0.1, color='#DAA520')
+    ax.fill_between(strikes, calls, alpha=0.1, color='#e2e8f0')
 
     # Puntos de Mercado (Puntos Rojos) - Solo si el usuario ingresó algún valor > 0
     if any(p > 0 for p in st.session_state.precios_mercado):
@@ -336,3 +336,7 @@ with grafico:
     ax.set_ylabel(t["graph_y"])
     ax.grid(True, linestyle='--', alpha=0.6)
     st.pyplot(fig)
+
+    # Eliminar bordes innecesarios
+    ax.spines['top'].set_visible(False)
+    ax.spines['right'].set_visible(False)
