@@ -129,13 +129,29 @@ local_css("style.css")
 # --- FUNCIONES DE OBTENCIÓN DE DATOS ---
 @st.cache_data(ttl=3600)
 def get_market_data_goldapi():
+    cache_file = "gold_price.txt"
+
+    # Leamos el archivo
+    if os.path.exists(cache_file):
+        file_age = time.time() - os.path.getmtime(cache_file)
+        if file_age < 10800 #tiempo de toleracia del archivo
+            try:
+                with open(cache_file, "r") as f:
+                    cached_file = float(f.read())
+                return cached_file
+            except:
+                pass
+    # Leemos de internet
     try:
         api_key = st.secrets["GOLD_API_KEY"]
         headers = {"x-access-token": api_key, "Content-Type": "application/json"}
         response = requests.get("https://www.goldapi.io/api/XAU/USD", headers=headers)
         data = response.json()
         if 'price' in data:
-            return float(data['price'])
+            nuevo_precio = float(data['price'])
+            with open(cache_file, "w") as f:
+                f.write(str(nuevo_precio))
+            return nuevo_precio
         return None
     except:
         return None #mensaje alerta
@@ -240,7 +256,7 @@ if st.session_state.market_cache is None:
         # 2. Al pulsar Enter, guardamos el valor inmediatamente
         precio_temp = st.number_input(t["val_act"], value=None, placeholder="", key="input_manual_temp", on_change=guardar_manual)
         
-        if st.button(t["recalc"], key="btn_start_manual", use_container_width=True, type="primary"):
+        if st.button("ENTER", key="btn_start_manual", use_container_width=True, type="primary"):
             guardar_manual()
             if precio_temp is not None and  precio_temp > 0:
                 st.rerun()
@@ -297,7 +313,7 @@ with herramientas:
             st.session_state.paso_val = VALOR_PASO_ORIGINAL
             st.rerun()
             
-    # Código para buscar sigma        
+    # Botón para el cálculo      
     btn_recalcular = st.button(t["recalc"], type="primary", use_container_width=True)
 
     with st.popover(t["lbl_ingresar"], use_container_width=True):
