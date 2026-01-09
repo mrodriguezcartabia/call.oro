@@ -241,14 +241,31 @@ with herramientas:
     # Código para buscar sigma        
     btn_recalcular = st.button(t["recalc"], type="primary", use_container_width=True)
 
-    st.divider() # Separador visual para la nueva sección
-    # Botón 1
-    label_dinamico = t["lbl_cerrar"] if st.session_state.mostrar_editor else t["lbl_ingresar"]
-    if st.button(label_dinamico, use_container_width=True):
-        st.session_state.mostrar_editor = not st.session_state.mostrar_editor
-        st.rerun()
+    with st.popover(t["lbl_ingresar"], use_container_width=True):
+        st.write(t["lbl_mkt_info"])
         
-    # Botón 2
+        rango_edicion = np.arange(strike - 15, strike + 15, 5)
+        
+        # Validamos que el tamaño coincida
+        if len(st.session_state.precios_mercado) != len(rango_edicion):
+            st.session_state.precios_mercado = [0.0] * len(rango_edicion)
+            
+        df_editor = pd.DataFrame({
+            "Strike": rango_edicion, 
+            "Precio Call Mercado": st.session_state.precios_mercado
+        })
+        
+        edited_df = st.data_editor(
+            df_editor, 
+            hide_index=True, 
+            use_container_width=True,
+            num_rows="fixed",
+            column_config={"Strike": st.column_config.NumberColumn(disabled=True)}
+        )
+        # Guardamos los cambios
+        st.session_state.precios_mercado = edited_df["Precio Call Mercado"].tolist()
+
+    # Botón para hallar sigma (ahora queda debajo del popover)
     if st.button(t["lbl_hallar"], type="primary", use_container_width=True):
         strikes_actuales = np.arange(strike - 15, strike + 15, 5)
         sigma_fit = hallar_sigma_optimo(
@@ -257,25 +274,15 @@ with herramientas:
             st.session_state.paso_val, param_a
         )
         st.session_state.sigma_hallado = sigma_fit
-        
-        # Actualizamos el gráfico para mostrar los puntos de mercado (los que ingresó el usuario)
-        st.session_state.data_grafico = (strikes_actuales, st.session_state.precios_mercado)
+        st.session_state.data_grafico = (strikes_actuales, [
+            calcular_call(precio_s, k, tasa_r, T, sigma_fit, beta, st.session_state.paso_val, param_a) 
+            for k in strikes_actuales
+        ])
         st.rerun()
 
-    # Cuadrado vacío / Resultado: Se llena solo al presionar "Hallar Sigma"
+    # Resultado del Sigma hallado
     valor_sigma = f"{st.session_state.sigma_hallado:.5f}" if st.session_state.sigma_hallado else ""
     st.metric(label=t["lbl_res"], value=valor_sigma)
-
-# Desplegable de ingreso de datos (Aparece y desaparece)
-if st.session_state.mostrar_editor:
-    with herramientas:
-        st.info(t["lbl_mkt_info"])
-        strikes_edit = np.arange(strike - 15, strike + 15, 5)
-        df_editor = pd.DataFrame({"Strike": strikes_edit, "Precio Call Mercado": st.session_state.precios_mercado})
-        edited_df = st.data_editor(df_editor, hide_index=True, use_container_width=True,
-        column_config={"Strike": st.column_config.NumberColumn(disabled=True)}) # No dejar editar el strike
-        st.session_state.precios_mercado = edited_df["Precio Call Mercado"].tolist()
-    
 # --- LÓGICA DE CÁLCULO BAJO DEMANDA ---
 if st.session_state.data_grafico is None or btn_recalcular:
     # Indicador de carga activo durante el proceso matemático
