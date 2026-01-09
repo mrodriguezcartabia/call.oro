@@ -220,10 +220,11 @@ if 'precios_mercado' not in st.session_state:
 # Intentamos obtener el precio de la sesión o de la API
 
 if st.session_state.market_cache is None:
-    # Usamos columnas para centrar la tarjeta sin romper el flujo de Streamlit
+    # Usamos columnas para centrar la tarjeta
     _, center_col, _ = st.columns([1, 2, 1])
     
     with center_col:
+        # Usamos la clase estática que tienes en tu CSS
         st.markdown(f"""
             <div class="overlay-card-static">
                 <h2 style="color: #DAA520; text-align: center;">{t['msg_error_api']}</h2>
@@ -231,15 +232,13 @@ if st.session_state.market_cache is None:
             </div>
         """, unsafe_allow_html=True)
         
-        # El input y botón ahora son 100% clicables
         precio_manual = st.number_input(t["val_act"], value=2650.0, key="manual_price_input")
         if st.button(t["recalc"], key="btn_start_manual", use_container_width=True, type="primary"):
             if precio_manual > 0:
                 st.session_state.market_cache = precio_manual
                 st.rerun()
     
-    # Esto detiene el resto de la app, creando el efecto de "pantalla de inicio"
-    st.stop()
+    st.stop() # Detiene el renderizado del resto de la app
     
 # Si llegamos aquí, ya hay un precio (sea por API o manual)
 dias = (vencimiento - hoy.date()).days 
