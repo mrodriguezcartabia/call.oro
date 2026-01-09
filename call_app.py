@@ -221,26 +221,27 @@ if 'precios_mercado' not in st.session_state:
 placeholder = st.empty()
 
 if st.session_state.market_cache is None:
-    with placeholder.container():
-        # Aquí solo inyectamos el div con la clase CSS
-        st.markdown(f"""
-            <div class="blocked-app">
-                <div class="overlay-card">
-                    <h2 style="color: white;">{t['msg_error_api']}</h2>
-                    <p style="color: #cbd5e0;">{t['msg_manual_price']}</p>
-                </div>
-            </div>
-        """, unsafe_allow_html=True)
-        
-        # El input y el botón aparecen debajo del cartel
-        precio_manual = st.number_input(t["val_act"], value=0.0, step=0.1, key="manual_price_input")
-        if st.button(t["recalc"], key="btn_start_manual"):
-            if precio_manual > 0:
-                st.session_state.market_cache = precio_manual
-                st.rerun()
-            else:
-                st.error("Precio inválido")
-        st.stop() 
+    # 1. Creamos el contenedor de bloqueo
+    st.markdown('<div class="blocked-app">', unsafe_allow_html=True)
+    
+    # 2. Creamos la tarjeta blanca/oscura central
+    st.markdown('<div class="overlay-card">', unsafe_allow_html=True)
+    
+    # 3. Contenido de texto
+    st.markdown(f"## {t['msg_error_api']}")
+    st.write(t['msg_manual_price'])
+    
+    # 4. Los widgets de Streamlit (se verán dentro de la tarjeta por el flujo del HTML)
+    precio_manual = st.number_input(t["val_act"], value=2650.0, key="manual_price_input")
+    if st.button(t["recalc"], key="btn_start_manual", use_container_width=True):
+        if precio_manual > 0:
+            st.session_state.market_cache = precio_manual
+            st.rerun()
+            
+    # 5. Cerramos los divs manuales
+    st.markdown('</div></div>', unsafe_allow_html=True)
+    
+    st.stop()
 
 # Si llegamos aquí, ya hay un precio (sea por API o manual)
 dias = (vencimiento - hoy.date()).days 
