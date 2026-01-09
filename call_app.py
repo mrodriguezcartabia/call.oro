@@ -4,6 +4,8 @@ import pandas as pd
 import pandas_market_calendars as mcal
 import numpy as np
 import matplotlib.pyplot as plt
+import os
+import time
 from datetime import datetime
 from scipy.special import comb
 from scipy.optimize import minimize_scalar
@@ -134,7 +136,7 @@ def get_market_data_goldapi():
     # Leamos el archivo
     if os.path.exists(cache_file):
         file_age = time.time() - os.path.getmtime(cache_file)
-        if file_age < 10800 #tiempo de toleracia del archivo
+        if file_age < 10800: #tiempo de toleracia del archivo
             try:
                 with open(cache_file, "r") as f:
                     cached_file = float(f.read())
