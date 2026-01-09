@@ -79,7 +79,7 @@ div[data-testid="stPopover"] > button {
 .metric-value-small {
     font-size: 1rem !important;
     font-weight: 700;
-    color: #DAA520; /* Color dorado para el precio */
+    color: #B8860B; /* Color dorado para el precio */
     font-family: 'Courier New', Courier, monospace;
 }
 
@@ -127,7 +127,7 @@ div.stButton > button[key="btn-reset"] p {
     background-color: #1e1e1e;
     padding: 40px;
     border-radius: 15px;
-    border: 2px solid #DAA520;
+    border: 2px solid #B8860B;
     text-align: center;
     max-width: 500px;
 }
