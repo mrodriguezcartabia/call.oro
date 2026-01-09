@@ -101,6 +101,16 @@ t = texts.get(idioma, texts["en"])
 # --- CONFIGURACIÓN DE PÁGINA ---
 st.set_page_config(page_title=t["title"], layout="wide")
 
+# Función para cargar el CSS  
+def local_css(file_name):
+    try:
+        with open(file_name) as f:
+            st.markdown(f"<style>{f.read()}</style>", unsafe_allow_html=True)
+    except FileNotFoundError:
+        pass # Por si el archivo aún no se sube o falla la lectura
+
+local_css("style.css")
+
 # --- FUNCIONES DE OBTENCIÓN DE DATOS ---
 @st.cache_data(ttl=3600)
 def get_market_data_goldapi():
