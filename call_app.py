@@ -38,7 +38,10 @@ texts = {
         "lbl_cerrar": "Close to save",
         "lbl_hallar": "Find sigma",
         "lbl_res": "Sigma found",
-        "lbl_mkt_info": "Enter market prices for each Strike:"
+        "lbl_mkt_info": "Enter market prices for each Strike:",
+        "Mercado": "Price market",
+        "msg_error_api": "No connection to GoldAPI",
+        "msg_manual_price": "Please enter the price manually to continue.",
     },
     "es": {
         "title": "Valuador de Call de Oro",
@@ -65,7 +68,10 @@ texts = {
         "lbl_cerrar": "Cerrar para guardar",
         "lbl_hallar": "Hallar sigma",
         "lbl_res": "Sigma hallado",
-        "lbl_mkt_info": "Introduce los precios de mercado para cada Strike:"
+        "lbl_mkt_info": "Introduce los precios de mercado para cada Strike:",
+        "Mercado": "Valor de mercado",
+        "msg_error_api": "Sin conexión con GoldAPI",
+        "msg_manual_price": "Por favor, coloque el precio manualmente para continuar.",
     },
     "pt": {
         "title": "Valiador de Call de Ouro",
@@ -92,7 +98,10 @@ texts = {
         "lbl_cerrar": "Fechar para salvar",
         "lbl_hallar": "Encontre sigma",
         "lbl_res": "Sigma encontrado",
-        "lbl_mkt_info": "Insira os preços de mercado para cada Strike:"
+        "lbl_mkt_info": "Insira os preços de mercado para cada Strike:",
+        "Mercado": "Mercado de preços",
+        "msg_error_api": "Sem conexão com a GoldAPI",
+        "msg_manual_price": "Por favor, insira o preço manualmente para continuar.",
     }
 }
 
@@ -123,7 +132,7 @@ def get_market_data_goldapi():
             return float(data['price'])
         return None
     except:
-        return Nono #mensaje alerta
+        return None #mensaje alerta
 
 @st.cache_data(ttl=86400)
 def fecha_vencimiento_oro(year, month):
@@ -208,10 +217,7 @@ if 'precios_mercado' not in st.session_state:
     st.session_state.precios_mercado = [0.0] * 6
 
 # --- INTERFAZ ---
-placeholder = st.empty()
-
 # Intentamos obtener el precio de la sesión o de la API
-# --- INTERFAZ Y LÓGICA DE BLOQUEO ---
 placeholder = st.empty()
 
 if st.session_state.market_cache is None:
@@ -361,15 +367,17 @@ with grafico:
 
     #st.subheader("Gráfico de Precio de Call (C) vs Strike (K)")
     fig, ax = plt.subplots(figsize=(8, 3.5))
+    fig.patch.set_facecolor('#e2e8f0') 
+    ax.set_facecolor('#e2e8f0')
     
     # Curva del Modelo
-    ax.plot(strikes, calls, marker='o', color='#DAA520', linewidth=2)
-    ax.fill_between(strikes, calls, alpha=0.1, color='#e2e8f0')
+    ax.plot(strikes, calls, marker='o', color='#B8860B', linewidth=2)
+    ax.fill_between(strikes, calls, alpha=0.1, color='#B8860B', label='Call')
 
-    # Puntos de Mercado (Puntos Rojos) - Solo si el usuario ingresó algún valor > 0
+    # Curva de Mercado   - Solo si el usuario ingresó algún valor > 0
     if any(p > 0 for p in st.session_state.precios_mercado):
-        ax.scatter(strikes, st.session_state.precios_mercado, color='red', label='Mercado', zorder=5)
-        ax.legend()
+        ax.plot(strikes, st.session_state.precios_mercado, marker='o', color='#000000', linewidth=2)
+        ax.fill_between(strikes, st.session_state.precios_mercado, alpha=0.1, color='#000000', label=t['Mercado'])
         
     ax.set_xlabel("Strike")
     ax.set_ylabel(t["graph_y"])
