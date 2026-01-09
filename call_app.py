@@ -6,6 +6,7 @@ import numpy as np
 import matplotlib.pyplot as plt
 from datetime import datetime
 from scipy.special import comb
+from scipy.optimize import minimize_scalar
 
 # --- LÓGICA DE IDIOMA ---
 params = st.query_params
@@ -32,7 +33,12 @@ texts = {
         "msg_success": "Calculation complete!",
         "graph_title": "Call Price (C) vs Strike (K)",
         "graph_y": "Call Price",
-        "info_init": "Click RECALCULATE to generate the visualization."
+        "info_init": "Click RECALCULATE to generate the visualization.",
+        "lbl_ingresar": "Enter market data",
+        "lbl_cerrar": "Close to save",
+        "lbl_hallar": "Find sigma",
+        "lbl_res": "Sigma found",
+        "lbl_mkt_info": "Enter market prices for each Strike:"
     },
     "es": {
         "title": "Valuador de Call de Oro",
@@ -54,7 +60,12 @@ texts = {
         "msg_success": "¡Cálculo finalizado!",
         "graph_title": "Gráfico de Precio de Call (C) vs Strike (K)",
         "graph_y": "Precio de la opción",
-        "info_init": "Presiona RECALCULAR para generar la visualización."
+        "info_init": "Presiona RECALCULAR para generar la visualización.",
+        "lbl_ingresar": "Ingresar datos de mercado",
+        "lbl_cerrar": "Cerrar para guardar",
+        "lbl_hallar": "Hallar sigma",
+        "lbl_res": "Sigma hallado",
+        "lbl_mkt_info": "Introduce los precios de mercado para cada Strike:"
     },
     "pt": {
         "title": "Valiador de Call de Ouro",
@@ -76,7 +87,12 @@ texts = {
         "msg_success": "Cálculo concluído!",
         "graph_title": "Gráfico de Preço da Call (C) vs Strike (K)",
         "graph_y": "Preço da opção",
-        "info_init": "Clique em RECALCULAR para gerar a visualização."
+        "info_init": "Clique em RECALCULAR para gerar a visualização.",
+        "lbl_ingresar": "Insira os dados de mercado",
+        "lbl_cerrar": "Fechar para salvar",
+        "lbl_hallar": "Encontre sigma",
+        "lbl_res": "Sigma encontrado",
+        "lbl_mkt_info": "Insira os preços de mercado para cada Strike:"
     }
 }
 
@@ -118,6 +134,20 @@ def get_fred_risk_free_rate():
         return float(data['observations'][0]['value']) / 100
     except:
         return 0.0425
+        
+def hallar_sigma_optimo(precios_mercado, strikes, S, r, T, beta, paso, param_a):
+    def error_cuadratico(sigma_test):
+        if sigma_test <= 0: return 1e10
+        err = 0
+        for i, k in enumerate(strikes):
+            # Calculamos el precio del modelo para cada strike con el sigma de prueba
+            c_mod = calcular_call(S, k, r, T, sigma_test, beta, paso, param_a)
+            err += (c_mod - precios_mercado[i])**2
+        return err
+    
+    # Optimizamos una sola variable (sigma) en un rango de 1% a 200%
+    res = minimize_scalar(error_cuadratico, bounds=(0.01, 2.0), method='bounded')
+    return res.x
 
 # --- FECHA DE VENCIMIENTO (para mes siguiente debemos ver el mes actual) --- 
 hoy = datetime.now()
@@ -158,6 +188,13 @@ if 'market_cache' not in st.session_state:
     st.session_state.tasa_cache = get_fred_risk_free_rate()
 if 'data_grafico' not in st.session_state:
     st.session_state.data_grafico = None
+if 'mostrar_editor' not in st.session_state:
+    st.session_state.mostrar_editor = False
+if 'sigma_hallado' not in st.session_state:
+    st.session_state.sigma_hallado = None
+if 'precios_mercado' not in st.session_state:
+    # Inicializamos con 15 ceros (asumiendo el rango de strikes por defecto)
+    st.session_state.precios_mercado = [0.0] * 6
 
 # --- INTERFAZ ---
 dias = (vencimiento - hoy.date()).days 
@@ -189,7 +226,9 @@ with herramientas:
     st.caption(t["fuente_precio"])
     #st.metric(label="Strike at the money", value=f"{strike}")
     st.metric(label=t["paso_temp"], value=f"{st.session_state.paso_val:.8f}")
-    boton1, boton2 = st.columns([1, 3])
+
+    # Botones de paso temporal
+    boton1, boton2 = st.columns([1, 2])
     with boton1:
         if st.button("x10⁻¹"):
             st.session_state.paso_val *= 0.1
@@ -198,13 +237,50 @@ with herramientas:
         if st.button(t["reset"]):
             st.session_state.paso_val = VALOR_PASO_ORIGINAL
             st.rerun()
+            
+    # Código para buscar sigma        
     btn_recalcular = st.button(t["recalc"], type="primary", use_container_width=True)
+
+    st.divider() # Separador visual para la nueva sección
+    # Botón 1
+    label_dinamico = t["lbl_cerrar"] if st.session_state.mostrar_editor else t["lbl_ingresar"]
+    if st.button(label_dinamico, use_container_width=True):
+        st.session_state.mostrar_editor = not st.session_state.mostrar_editor
+        st.rerun()
+        
+    # Botón 2
+    if st.button(t["lbl_hallar"], type="primary", use_container_width=True):
+        strikes_actuales = np.arange(strike - 15, strike + 15, 5)
+        sigma_fit = hallar_sigma_optimo(
+            st.session_state.precios_mercado, 
+            strikes_actuales, precio_s, tasa_r, T, beta, 
+            st.session_state.paso_val, param_a
+        )
+        st.session_state.sigma_hallado = sigma_fit
+        
+        # Actualizamos el gráfico para mostrar los puntos de mercado (los que ingresó el usuario)
+        st.session_state.data_grafico = (strikes_actuales, st.session_state.precios_mercado)
+        st.rerun()
+
+    # Cuadrado vacío / Resultado: Se llena solo al presionar "Hallar Sigma"
+    valor_sigma = f"{st.session_state.sigma_hallado:.5f}" if st.session_state.sigma_hallado else ""
+    st.metric(label=t["lbl_res"], value=valor_sigma)
+
+# Desplegable de ingreso de datos (Aparece y desaparece)
+if st.session_state.mostrar_editor:
+    with herramientas:
+        st.info(t["lbl_mkt_info"])
+        strikes_edit = np.arange(strike - 15, strike + 15, 5)
+        df_editor = pd.DataFrame({"Strike": strikes_edit, "Precio Call Mercado": st.session_state.precios_mercado})
+        edited_df = st.data_editor(df_editor, hide_index=True, use_container_width=True,
+        column_config={"Strike": st.column_config.NumberColumn(disabled=True)}) # No dejar editar el strike
+        st.session_state.precios_mercado = edited_df["Precio Call Mercado"].tolist()
     
 # --- LÓGICA DE CÁLCULO BAJO DEMANDA ---
 if st.session_state.data_grafico is None or btn_recalcular:
     # Indicador de carga activo durante el proceso matemático
     with st.spinner(t['msg_loading']):
-        rango_strikes = np.arange(strike - 35, strike + 40, 5)
+        rango_strikes = np.arange(strike - 15, strike + 15, 5)
         valores_c = []
         for k in rango_strikes:
             c = calcular_call(precio_s, k, tasa_r, T, sigma, beta, st.session_state.paso_val, param_a)
@@ -220,8 +296,16 @@ with grafico:
 
     #st.subheader("Gráfico de Precio de Call (C) vs Strike (K)")
     fig, ax = plt.subplots(figsize=(8, 3.5))
+    
+    # Curva del Modelo
     ax.plot(strikes, calls, marker='o', color='#DAA520', linewidth=2)
     ax.fill_between(strikes, calls, alpha=0.1, color='#DAA520')
+
+    # Puntos de Mercado (Puntos Rojos) - Solo si el usuario ingresó algún valor > 0
+    if any(p > 0 for p in st.session_state.precios_mercado):
+        ax.scatter(strikes, st.session_state.precios_mercado, color='red', label='Mercado', zorder=5)
+        ax.legend()
+        
     ax.set_xlabel("Strike")
     ax.set_ylabel(t["graph_y"])
     ax.grid(True, linestyle='--', alpha=0.6)
