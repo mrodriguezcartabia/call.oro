@@ -1,39 +1,57 @@
-/* 1. Estilo para las métricas (Precio del Oro y Paso Temporal) */
+/* Importar la fuente Inter para total consistencia */
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap');
+
+* {
+    font-family: 'Inter', sans-serif;
+}
+
+/* 1. Fondo principal y transparencia */
+.stApp {
+    background-color: #0f172a;
+}
+
+/* 2. Estilo de "Card" para las métricas */
+[data-testid="stMetric"] {
+    background-color: rgba(30, 41, 59, 0.8) !important;
+    backdrop-filter: blur(8px);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    border-radius: 0.75rem;
+    padding: 15px !important;
+}
+
 [data-testid="stMetricValue"] {
-    font-size: 38px !important;
-    color: #DAA520 !important; /* Color Dorado */
-    font-weight: bold;
+    color: #DAA520 !important; /* Mantenemos el dorado para el precio por énfasis */
+    font-weight: 700 !important;
 }
 
-[data-testid="stMetricLabel"] {
-    font-size: 18px !important;
-    font-weight: 500;
+/* 3. Botones con el estilo de Gamma Solutions */
+div.stButton > button {
+    border-radius: 0.5rem !important;
+    text-transform: uppercase;
+    font-weight: 600 !important;
+    letter-spacing: 0.05em;
+    transition: all 0.3s ease !important;
 }
 
-/* 2. Personalización de los botones Primary (Recalcular y Hallar Sigma) */
 div.stButton > button[kind="primary"] {
-    background-color: #DAA520;
-    border-color: #DAA520;
-    color: white;
-    font-weight: bold;
-    border-radius: 8px;
-    height: 3em;
+    background-color: #5f6ac4 !important;
+    border: none !important;
 }
 
 div.stButton > button[kind="primary"]:hover {
-    background-color: #B8860B; /* Dorado más oscuro al pasar el mouse */
-    border-color: #B8860B;
+    background-color: #4f5aba !important;
+    box-shadow: 0 0 15px rgba(95, 106, 196, 0.4);
 }
 
-/* 3. Estilo para el botón del Popover (Ingresar datos) */
+/* 4. Estilo para el Popover e Inputs */
 div[data-testid="stPopover"] > button {
-    border: 1px solid #DAA520;
-    color: #DAA520;
-    font-weight: 600;
+    border: 1px solid rgba(255, 255, 255, 0.2) !important;
+    background-color: #1e293b !important;
+    color: #e2e8f0 !important;
 }
 
-/* 4. Estilo para las tarjetas de información (Vencimiento) */
-div.stAlert {
-    border-radius: 10px;
-    border-left: 5px solid #DAA520;
+/* 5. Ajustar el editor de datos (Data Editor) */
+[data-testid="stDataEditor"] {
+    border: 1px solid rgba(255, 255, 255, 0.1) !important;
+    border-radius: 8px;
 }
