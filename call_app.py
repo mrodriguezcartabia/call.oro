@@ -26,6 +26,7 @@ texts = {
         "val_act": "Current Price",
         "strike_atm": "Strike (At-the-money)",
         "paso_temp": "Time Step",
+        "reset": "Reset to initial value",
         "recalc": "RECALCULATE",
         "msg_loading": "Running binomial model...",
         "msg_success": "Calculation complete!",
@@ -47,6 +48,7 @@ texts = {
         "val_act": "Valor Actual",
         "strike_atm": "Strike At-the-money",
         "paso_temp": "Paso Temporal",
+        "reset": "Reestablecer al valor inicial",
         "recalc": "RECALCULAR",
         "msg_loading": "Ejecutando modelo binomial...",
         "msg_success": "¡Cálculo finalizado!",
@@ -68,6 +70,7 @@ texts = {
         "val_act": "Preço Atual",
         "strike_atm": "Strike At-the-money",
         "paso_temp": "Passo Temporal",
+        "reset": "Redefinir para o valor inicial",
         "recalc": "RECALCULAR",
         "msg_loading": "Executando modelo binomial...",
         "msg_success": "Cálculo concluído!",
@@ -80,7 +83,7 @@ texts = {
 t = texts.get(idioma, texts["en"])
 
 # --- CONFIGURACIÓN DE PÁGINA ---
-st.set_page_config(page_title="Valuador de call de oro", layout="wide")
+st.set_page_config(page_title=t["title"], layout="wide")
 
 # --- FUNCIONES DE OBTENCIÓN DE DATOS ---
 @st.cache_data(ttl=3600)
@@ -165,25 +168,25 @@ strike = round(precio_s / 5) * 5
 col1, col2 = st.columns(2)
 with col1:
     param_a_def = 1.0
-    param_a = st.number_input("Alpha", value=param_a_def, step=0.01)
+    param_a = st.number_input(t["alpha_lbl"], value=param_a_def, step=0.01)
     sigma_def = 0.16
-    sigma = st.number_input("Sigma", value=sigma_def, format="%.2f")
-    st.caption("ℹ️ Basada en datos pasados (valor conservador)")
+    sigma = st.number_input(t["sigma_lbl"], value=sigma_def, format="%.2f")
+    st.caption(t["sigma_cap"])
 
 with col2:
     beta = st.number_input("Beta", value=0.5, step=0.01)
     #s_def = st.session_state.market_cache['S'] if st.session_state.market_cache else 2000.0
-    #precio_s = st.number_input("Precio", value=s_def, format="%.2f")
-    tasa_r = st.number_input("Tasa", value=st.session_state.tasa_cache, format="%.4f")
+    #precio_s = st.number_input(t["cal_act"], value=s_def, format="%.2f")
+    tasa_r = st.number_input(t["tasa_lbl"], value=st.session_state.tasa_cache, format="%.4f")
     st.caption(t["fuente_tasa"])
 
 # --- BOTONES DE CONTROL Y GRÁFICO ---
 herramientas, grafico = st.columns([1, 3])
 with herramientas:
-    st.info(f" Vencimiento en {dias} días ({vencimiento})")
-    st.metric(label="Valor actual", value=f"{precio_s}")
+    st.info(t["venc_msg"].format(dias, vencimiento))
+    st.metric(label=t["val_act"], value=f"{precio_s}")
     st.caption(t["fuente_precio"])
-    st.metric(label="Strike at the money", value=f"{strike}")
+    #st.metric(label="Strike at the money", value=f"{strike}")
     st.metric(label=t["paso_temp"], value=f"{st.session_state.paso_val:.8f}")
     boton1, boton2 = st.columns([1, 1])
     with boton1:
@@ -191,7 +194,7 @@ with herramientas:
             st.session_state.paso_val *= 0.1
             st.rerun()
     with boton2:
-        if st.button("Reset Paso"):
+        if st.button(t["reset"]):
             st.session_state.paso_val = VALOR_PASO_ORIGINAL
             st.rerun()
     btn_recalcular = st.button(t["recalc"], type="primary", use_container_width=True)
@@ -199,7 +202,7 @@ with herramientas:
 # --- LÓGICA DE CÁLCULO BAJO DEMANDA ---
 if st.session_state.data_grafico is None or btn_recalcular:
     # Indicador de carga activo durante el proceso matemático
-    with st.spinner('Ejecutando modelo binomial...'):
+    with st.spinner(t['msg_loading']):
         rango_strikes = np.arange(strike - 35, strike + 40, 5)
         valores_c = []
         for k in rango_strikes:
@@ -208,17 +211,17 @@ if st.session_state.data_grafico is None or btn_recalcular:
         st.session_state.data_grafico = (rango_strikes, valores_c)
     # Mensaje temporal de éxito
     if btn_recalcular:
-        st.toast("¡Cálculo finalizado!", icon="✅")
+        st.toast(t["msg_success"])
         
 # --- COLOCAMOS EL GRÁFICO ---
 with grafico:
     strikes, calls = st.session_state.data_grafico
 
-    st.subheader("Gráfico de Precio de Call (C) vs Strike (K)")
+    #st.subheader("Gráfico de Precio de Call (C) vs Strike (K)")
     fig, ax = plt.subplots(figsize=(8, 3.5))
     ax.plot(strikes, calls, marker='o', color='#DAA520', linewidth=2)
     ax.fill_between(strikes, calls, alpha=0.1, color='#DAA520')
     ax.set_xlabel("Strike (K)")
-    ax.set_ylabel("Precio de la Opción (C)")
+    ax.set_ylabel(t["graph_y"])
     ax.grid(True, linestyle='--', alpha=0.6)
     st.pyplot(fig)
