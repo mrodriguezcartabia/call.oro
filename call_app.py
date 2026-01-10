@@ -314,7 +314,7 @@ if st.session_state.market_cache is None:
         """, unsafe_allow_html=True)
       
         # Al pulsar Enter, guardamos el valor inmediatamente
-        precio_inicial = st.number_input(t["val_act"], value=None, placeholder="", key="input_inicial")
+        precio_inicial = st.number_input(t["val_act"], value=None, placeholder="", key="input_inicial", on_changes=guardar_manual)
         
         if st.button("ENTER", key="btn_start_manual", use_container_width=True, type="primary"):
             if precio_inicial is not None and  precio_inicial > 0:
@@ -381,7 +381,7 @@ with herramientas:
         
         # 1. Creamos un formulario interno
         with st.form("form_mercado"):
-            rango_edicion = np.arange(strike - 15, strike + 15, 5)
+            rango_edicion = np.arange(strike - 15, strike + 16, 5)
             
             # Sincronización inicial
             if len(st.session_state.precios_mercado) != len(rango_edicion):
@@ -412,7 +412,7 @@ with herramientas:
 
     # Botón para hallar sigma (ahora queda debajo del popover)
     if st.button(t["lbl_hallar"], type="primary", use_container_width=True) and any(p > 0 for p in st.session_state.precios_mercado):
-        strikes_actuales = np.arange(strike - 15, strike + 15, 5)
+        strikes_actuales = np.arange(strike - 15, strike + 16, 5)
         sigma_fit = hallar_sigma_optimo(
             st.session_state.precios_mercado, 
             strikes_actuales, precio_s, tasa_r, T, beta, 
@@ -429,7 +429,7 @@ with herramientas:
 if st.session_state.data_grafico is None or btn_recalcular:
     # Indicador de carga activo durante el proceso matemático
     with st.spinner(t['msg_loading']):
-        rango_strikes = np.arange(strike - 15, strike + 15, 5)
+        rango_strikes = np.arange(strike - 15, strike + 16, 5)
         valores_c = []
         for k in rango_strikes:
             c = calcular_call(precio_s, k, tasa_r, T, sigma, beta, st.session_state.paso_val, param_a)
