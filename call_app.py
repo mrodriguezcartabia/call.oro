@@ -314,7 +314,7 @@ if st.session_state.market_cache is None:
         """, unsafe_allow_html=True)
       
         # Al pulsar Enter, guardamos el valor inmediatamente
-        precio_inicial = st.number_input(t["val_act"], value=None, placeholder="", key="input_inicial", on_changes=guardar_manual)
+        precio_inicial = st.number_input(t["val_act"], value=None, placeholder="", key="input_inicial", on_change=guardar_manual)
         
         if st.button("ENTER", key="btn_start_manual", use_container_width=True, type="primary"):
             if precio_inicial is not None and  precio_inicial > 0:
