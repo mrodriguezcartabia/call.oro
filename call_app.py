@@ -15,6 +15,53 @@ from scipy.optimize import minimize_scalar
 def guardar_manual():
     if st.session_state.input_manual_temp:
         st.session_state.market_cache = st.session_state.input_manual_temp
+
+import streamlit as st
+import requests
+import json
+
+def diagnostico_api():
+    st.subheader("🔍 Diagnóstico de Conexión Alpha Vantage")
+    
+    try:
+        # 1. Verificar si la Key existe
+        if "ALPHAVANTAGE_API_KEY" not in st.secrets:
+            st.error("❌ No se encontró la clave 'ALPHAVANTAGE_API_KEY' en los Secrets.")
+            return
+        
+        api_key = st.secrets["ALPHAVANTAGE_API_KEY"]
+        url = f"https://www.alphavantage.co/query?function=GOLD&apikey={api_key}"
+        
+        st.write(f"Intentando conectar a: `https://www.alphavantage.co/query?function=GOLD&apikey=***`")
+        
+        # 2. Hacer la petición
+        response = requests.get(url, timeout=10)
+        
+        # 3. Ver el código de estado HTTP
+        st.write(f"Código de respuesta HTTP: `{response.status_code}`")
+        
+        # 4. Ver el JSON crudo que devuelve la API
+        data = response.json()
+        st.write("Respuesta completa del servidor:")
+        st.json(data)
+        
+        # 5. Análisis del contenido
+        if "Note" in data:
+            st.warning("⚠️ Límite de frecuencia alcanzado (la API gratuita permite 5 llamadas/min).")
+        elif "Error Message" in data:
+            st.error("❌ La API devolvió un error. Revisa si la API Key es válida.")
+        elif "data" in data:
+            precio = data["data"][0]["value"]
+            st.success(f"✅ ¡Éxito! El precio encontrado es: {precio}")
+        else:
+            st.info("ℹ️ La API respondió pero no se encontró la estructura de datos esperada.")
+            
+    except Exception as e:
+        st.error(f"💥 Error fatal ejecutando el diagnóstico: {e}")
+
+# Para ejecutarlo, simplemente llámalo en tu app:
+if st.checkbox("Ejecutar Test de API"):
+    diagnostico_api()
         
 # --- LÓGICA DE IDIOMA ---
 params = st.query_params
