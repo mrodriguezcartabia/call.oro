@@ -294,8 +294,8 @@ if 'mostrar_editor' not in st.session_state:
 if 'sigma_hallado' not in st.session_state:
     st.session_state.sigma_hallado = None
 if 'precios_mercado' not in st.session_state:
-    # Inicializamos con 15 ceros (asumiendo el rango de strikes por defecto)
-    st.session_state.precios_mercado = [0.0] * 6
+    # Inicializamos con ceros (asumiendo el rango de strikes por defecto)
+    st.session_state.precios_mercado = [0.0] * 7
 
 # --- INTERFAZ ---
 # Intentamos obtener el precio de la sesión o de la API
