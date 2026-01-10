@@ -40,7 +40,7 @@ texts = {
         "graph_y": "Call Price",
         "info_init": "Click RECALCULATE to generate the visualization.",
         "lbl_ingresar": "Enter market data",
-        "lbl_cerrar": "Close to save",
+        "lbl_guardar": "Save",
         "lbl_hallar": "Find sigma",
         "lbl_res": "Sigma found",
         "lbl_mkt_info": "Enter market prices for each Strike:",
@@ -71,7 +71,7 @@ texts = {
         "graph_y": "Precio de la opción",
         "info_init": "Presiona RECALCULAR para generar la visualización.",
         "lbl_ingresar": "Ingresar datos de mercado",
-        "lbl_cerrar": "Cerrar para guardar",
+        "lbl_guardar": "Guardar",
         "lbl_hallar": "Hallar sigma",
         "lbl_res": "Sigma hallado",
         "lbl_mkt_info": "Introduce los precios de mercado para cada Strike:",
@@ -102,7 +102,7 @@ texts = {
         "graph_y": "Preço da opção",
         "info_init": "Clique em RECALCULAR para gerar a visualização.",
         "lbl_ingresar": "Insira os dados de mercado",
-        "lbl_cerrar": "Fechar para salvar",
+        "lbl_guardar": "Salvar",
         "lbl_hallar": "Encontre sigma",
         "lbl_res": "Sigma encontrado",
         "lbl_mkt_info": "Insira os preços de mercado para cada Strike:",
@@ -403,7 +403,7 @@ with herramientas:
             )
             
             # 2. Botón para confirmar los cambios
-            submit_save = st.form_submit_button(t["lbl_cerrar"], use_container_width=True)
+            submit_save = st.form_submit_button(t["lbl_guardar"], use_container_width=True)
             
             if submit_save:
                 # Solo aquí guardamos los datos en el estado global
