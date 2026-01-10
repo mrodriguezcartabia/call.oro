@@ -58,7 +58,10 @@ def diagnostico_api():
         else:
             st.info("ℹ️ La API respondió pero no se encontró la estructura 'Time Series (Daily)'.")
             
-# Para ejecutarlo, simplemente llámalo en tu app:
+    except Exception as e:
+        st.error(f"💥 Error fatal: {e}")
+
+# AHORA SÍ, esto está fuera de la función
 if st.checkbox("Ejecutar Test de API"):
     diagnostico_api()
         
