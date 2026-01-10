@@ -28,7 +28,7 @@ texts = {
         "sigma_lbl": "Sigma (Volatility)",
         "sigma_cap": "ℹ️ Conservative value based on past data",
         "alpha_lbl": "Alpha",
-        "fuente_precio": "ℹ️ Data from API Ninjas",
+        "fuente_precio": "ℹ️ Data from API Alpha Vantage",
         "tasa_lbl": "Risk-Free Rate",
         "fuente_tasa": "ℹ️ Source: FRED",
         "venc_msg": "Expires in {} days ({})",
@@ -48,7 +48,7 @@ texts = {
         "lbl_res": "Sigma found",
         "lbl_mkt_info": "Enter market prices for each Strike:",
         "precio_mercado": "Price market",
-        "msg_error_api": "No connection to API Ninjas",
+        "msg_error_api": "No connection to API Alpha Vantage",
         "msg_manual_price": "Please enter the price manually to continue.",
         "error_fred": "No connection to FRED",
     },
@@ -59,7 +59,7 @@ texts = {
         "sigma_lbl": "Sigma (Volatilidad)",
         "sigma_cap": "ℹ️ Valor conservador basado en datos pasados",
         "alpha_lbl": "Alfa",
-        "fuente_precio": "ℹ️ Datos de API Ninjas",
+        "fuente_precio": "ℹ️ Datos de API Alpha Vantage",
         "tasa_lbl": "Tasa Libre de Riesgo",
         "fuente_tasa": "ℹ️ Fuente: FRED",
         "venc_msg": "Vencimiento en {} días ({})",
@@ -79,7 +79,7 @@ texts = {
         "lbl_res": "Sigma hallado",
         "lbl_mkt_info": "Introduce los precios de mercado para cada Strike:",
         "precio_mercado": "Valor de mercado",
-        "msg_error_api": "Sin conexión con API Ninjas",
+        "msg_error_api": "Sin conexión con API Alpha Vantage",
         "msg_manual_price": "Por favor, coloque el precio manualmente para continuar.",
         "error_fred": "Sin conexión con FRED",
     },
@@ -90,7 +90,7 @@ texts = {
         "sigma_lbl": "Sigma (Volatilidade)",
         "sigma_cap": "ℹ️ Valor conservador baseado em dados passados",
         "alpha_lbl": "Alfa",
-        "fuente_precio": "ℹ️ Dados da API Ninjas",
+        "fuente_precio": "ℹ️ Dados da API Alpha Vantage",
         "tasa_lbl": "Taxa Livre de Risco",
         "fuente_tasa": "ℹ️ Fonte: FRED",
         "venc_msg": "Expira em {} dias ({})",
@@ -110,7 +110,7 @@ texts = {
         "lbl_res": "Sigma encontrado",
         "lbl_mkt_info": "Insira os preços de mercado para cada Strike:",
         "precio_mercado": "Mercado de preços",
-        "msg_error_api": "Sem conexão com a API Ninjas",
+        "msg_error_api": "Sem conexão com a API Alpha Vantage",
         "msg_manual_price": "Por favor, insira o preço manualmente para continuar.",
         "error_fred": "Sem conexão com a FRED",
     }
@@ -160,7 +160,7 @@ def get_market_data_goldapi():
     except:
         return None #mensaje alerta
         
-def get_market_data_ninjas():
+def get_market_data_alpha():
     cache_file = "future_price.txt"
     # Leamos el archivo
     if os.path.exists(cache_file):
@@ -174,29 +174,18 @@ def get_market_data_ninjas():
                 pass
     # Buscamos en la web
     try:
-        api_key = st.secrets["NINJAS_API_KEY"]
-        headers = {'X-Api-Key': api_key}
-        response = requests.get('https://api.api-ninjas.com/v1/commodityprice?name=Gold', headers=headers)
-
-        if response.status_code != 200:
-            st.error(f"Error de API: código {response.status_code}")
-            st.write(response.text)
-            return None
-            
+        api_key = st.secrets["ALPHAVANTAGE_API_KEY"]  
+        headers = {"User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36"}
+        response = requests.get(f"https://www.alphavantage.co/query?function=GOLD&apikey={api_key}", headers=headers)
         data = response.json()
-        if isinstance(data, list) and len(data) > 0:
-            nuevo_precio = float(data[0]['price']) if 'price' in data[0] else float(data[0])
-        elif 'price' in data:
-            nuevo_precio = float(data['price'])
-        else:
-            st.warning("La API respondió pero no de encontró el campo price")
-            st.write(data)
-            return None
-        with open(cache_file, "w") as f:
-            f.write(str(nuevo_precio))
-        return nuevo_precio
+        if "data" in data and len(data["data"]) > 0:
+            nuevo_precio = float(data["data"][0]["value"])
+            with open(cache_file, "w") as f:
+                f.write(str(nuevo_precio))
+            return nuevo_precio
+        return None
     except Exception as e:
-        st.error(f"Fallo crítico en la solicitud: {str(e)}")
+        st.error(f"Error: {e}")
         return None
         
 #@st.cache_data(ttl=86400)
@@ -288,7 +277,7 @@ VALOR_PASO_ORIGINAL = 0.1
 if 'paso_val' not in st.session_state:
     st.session_state.paso_val = VALOR_PASO_ORIGINAL
 if 'market_cache' not in st.session_state:
-    st.session_state.market_cache = get_market_data_ninjas() 
+    st.session_state.market_cache = get_market_data_alpha() 
     st.session_state.tasa_cache = get_fred_risk_free_rate()
 if 'data_grafico' not in st.session_state:
     st.session_state.data_grafico = None
