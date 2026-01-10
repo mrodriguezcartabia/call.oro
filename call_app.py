@@ -276,14 +276,14 @@ strike = round(precio_s / 5) * 5
 col1, col2 = st.columns(2)
 with col1:
     param_a_def = 1.0
-    param_a = st.number_input(t["alpha_lbl"], value=param_a_def, step=0.01)
+    param_a = st.number_input(t["alpha_lbl"], value=param_a_def, step=0.01, min_value=0.1, max_value=10.0)
     sigma_def = 0.16
-    sigma = st.number_input(t["sigma_lbl"], value=sigma_def, format="%.2f")
+    sigma = st.number_input(t["sigma_lbl"], value=sigma_def, format="%.2f", min_value=0.1, max_value=2.0)
     st.caption(t["sigma_cap"])
 
 with col2:
-    beta = st.number_input("Beta", value=0.5, step=0.01)
-    tasa_r = st.number_input(t["tasa_lbl"], value=st.session_state.tasa_cache, format="%.4f")
+    beta = st.number_input("Beta", value=0.5, step=0.01, min_value=0.0, max_value=10.0)
+    tasa_r = st.number_input(t["tasa_lbl"], value=st.session_state.tasa_cache, format="%.4f", min_value=0.0, max_value=10.0)
     st.caption(t["fuente_tasa"])
 
 # --- BOTONES DE CONTROL Y GRÁFICO ---
@@ -340,7 +340,8 @@ with herramientas:
                 hide_index=True, 
                 use_container_width=True,
                 num_rows="fixed",
-                column_config={"Strike": st.column_config.NumberColumn(disabled=True)}
+                column_config={"Strike": st.column_config.NumberColumn(disabled=True)},
+                min_value=0.0
             )
             
             # 2. Botón para confirmar los cambios
@@ -349,10 +350,10 @@ with herramientas:
             if submit_save:
                 # Solo aquí guardamos los datos en el estado global
                 st.session_state.precios_mercado = edited_df["Precio Call Mercado"].tolist()
-                st.rerun() # Esto refresca el gráfico con los nuevos puntos rojos
+                st.rerun() # Esto refresca el gráfico con los nuevos puntos 
 
     # Botón para hallar sigma (ahora queda debajo del popover)
-    if st.button(t["lbl_hallar"], type="primary", use_container_width=True):
+    if st.button(t["lbl_hallar"], type="primary", use_container_width=True) and any(p > 0 for p in st.session_state.precios_mercado):
         strikes_actuales = np.arange(strike - 15, strike + 15, 5)
         sigma_fit = hallar_sigma_optimo(
             st.session_state.precios_mercado, 
