@@ -239,7 +239,7 @@ def get_fred_risk_free_rate():
         st.error(t['error_fred'])
         return 0.04
     
-    def hallar_sigma_optimo(precios_mercado, strikes, S, r, T, beta, paso, param_a):
+def hallar_sigma_optimo(precios_mercado, strikes, S, r, T, beta, paso, param_a):
     def error_cuadratico(sigma_test):
         if sigma_test <= 0: return 1e10
         err = 0
