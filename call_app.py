@@ -30,7 +30,7 @@ def diagnostico_api():
             return
         
         api_key = st.secrets["ALPHAVANTAGE_API_KEY"]
-        url = f"https://www.alphavantage.co/query?function=GOLD&interval=monthly&apikey={api_key}"
+        url = f"https://www.alphavantage.co/query?function=TIME_SERIES_DAILY&symbol=GLD&apikey={api_key}"
         
         st.write(f"Intentando conectar a: `https://www.alphavantage.co/query?function=GOLD&apikey=***`")
         
@@ -45,20 +45,19 @@ def diagnostico_api():
         st.write("Respuesta completa del servidor:")
         st.json(data)
         
-        # 5. Análisis del contenido
+        #5. Análisis del contenido (Ajustado para TIME_SERIES_DAILY / GLD)
         if "Note" in data:
             st.warning("⚠️ Límite de frecuencia alcanzado (la API gratuita permite 5 llamadas/min).")
         elif "Error Message" in data:
             st.error("❌ La API devolvió un error. Revisa si la API Key es válida.")
-        elif "data" in data:
-            precio = data["data"][0]["value"]
-            st.success(f"✅ ¡Éxito! El precio encontrado es: {precio}")
+        elif "Time Series (Daily)" in data:
+            ultima_fecha = list(data["Time Series (Daily)"].keys())[0]
+            precio = data["Time Series (Daily)"][ultima_fecha]["4. close"]
+            st.success(f"✅ ¡Éxito! El precio de GLD encontrado es: {precio}")
+            st.info(f"Precio estimado por onza (x10): {float(precio)*10}")
         else:
-            st.info("ℹ️ La API respondió pero no se encontró la estructura de datos esperada.")
+            st.info("ℹ️ La API respondió pero no se encontró la estructura 'Time Series (Daily)'.")
             
-    except Exception as e:
-        st.error(f"💥 Error fatal ejecutando el diagnóstico: {e}")
-
 # Para ejecutarlo, simplemente llámalo en tu app:
 if st.checkbox("Ejecutar Test de API"):
     diagnostico_api()
@@ -223,16 +222,21 @@ def get_market_data_alpha():
     try:
         api_key = st.secrets["ALPHAVANTAGE_API_KEY"]  
         headers = {"User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36"}
-        response = requests.get(f"https://www.alphavantage.co/query?function=GOLD&interval=monthly&apikey={api_key}", headers=headers, timeout=10)
+        response = requests.get(f"https://www.alphavantage.co/query?function=TIME_SERIES_DAILY&symbol=GLD&apikey={api_key}", headers=headers, timeout=10)
         data = response.json()
-        if "data" in data and len(data["data"]) > 0:
-            primer_valor = data["data"][0]["value"]
-            if primer_valor and primer_valor != ".": # verificamos que no sea vacío o un punto
-                nuevo_precio = float(primer_valor)
-                with open(cache_file, "w") as f:
-                    f.write(str(nuevo_precio))
-                return nuevo_precio
-            return None
+        if "Time Series (Daily)" in data:
+            # Obtenemos la fecha de cierre más reciente
+            ultima_fecha = list(data["Time Series (Daily)"].keys())[0]
+            precio_etf = float(data["Time Series (Daily)"][ultima_fecha]["4. close"])
+            
+            # El GLD vale 1/10 de la onza de oro aprox. Multiplicamos por 10 para 
+            # que el gráfico de tu app muestre los ~2600 USD del oro real.
+            nuevo_precio = precio_etf * 10 
+            
+            with open(cache_file, "w") as f:
+                f.write(str(nuevo_precio))
+            return nuevo_precio
+        return None
     except Exception as e:
         st.error(f"Error: {e}")
         return None
