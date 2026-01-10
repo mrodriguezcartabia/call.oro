@@ -47,7 +47,7 @@ texts = {
         "lbl_hallar": "Find sigma",
         "lbl_res": "Sigma found",
         "lbl_mkt_info": "Enter market prices for each Strike:",
-        "Mercado": "Price market",
+        "precio_mercado": "Price market",
         "msg_error_api": "No connection to GoldAPI",
         "msg_manual_price": "Please enter the price manually to continue.",
     },
@@ -77,7 +77,7 @@ texts = {
         "lbl_hallar": "Hallar sigma",
         "lbl_res": "Sigma hallado",
         "lbl_mkt_info": "Introduce los precios de mercado para cada Strike:",
-        "Mercado": "Valor de mercado",
+        "precio_mercado": "Valor de mercado",
         "msg_error_api": "Sin conexión con GoldAPI",
         "msg_manual_price": "Por favor, coloque el precio manualmente para continuar.",
     },
@@ -107,7 +107,7 @@ texts = {
         "lbl_hallar": "Encontre sigma",
         "lbl_res": "Sigma encontrado",
         "lbl_mkt_info": "Insira os preços de mercado para cada Strike:",
-        "Mercado": "Mercado de preços",
+        "precio_mercado": "Mercado de preços",
         "msg_error_api": "Sem conexão com a GoldAPI",
         "msg_manual_price": "Por favor, insira o preço manualmente para continuar.",
     }
@@ -331,7 +331,7 @@ with herramientas:
                 
             df_editor = pd.DataFrame({
                 "Strike": rango_edicion, 
-                "Precio Call Mercado": st.session_state.precios_mercado
+                t["precio_mercado"]: st.session_state.precios_mercado
             })
             
             # El editor dentro del formulario no dispara re-ejecuciones automáticas
@@ -341,7 +341,7 @@ with herramientas:
                 use_container_width=True,
                 num_rows="fixed",
                 column_config={"Strike": st.column_config.NumberColumn(disabled=True),
-                "Precio Call Mercado": st.column_config.NumberColumn(min_value=0.0)}
+                t["precio_mercado"]: st.column_config.NumberColumn(min_value=0.0)}
             )
             
             # 2. Botón para confirmar los cambios
@@ -349,7 +349,7 @@ with herramientas:
             
             if submit_save:
                 # Solo aquí guardamos los datos en el estado global
-                st.session_state.precios_mercado = edited_df["Precio Call Mercado"].tolist()
+                st.session_state.precios_mercado = edited_df[t["precio_mercado"]].tolist()
                 st.rerun() # Esto refresca el gráfico con los nuevos puntos 
 
     # Botón para hallar sigma (ahora queda debajo del popover)
@@ -397,7 +397,7 @@ with grafico:
     # Curva de Mercado   - Solo si el usuario ingresó algún valor > 0
     if any(p > 0 for p in st.session_state.precios_mercado):
         ax.plot(strikes, st.session_state.precios_mercado, marker='o', color='#000000', linewidth=2)
-        ax.fill_between(strikes, st.session_state.precios_mercado, alpha=0.1, color='#000000', label=t['Mercado'])
+        ax.fill_between(strikes, st.session_state.precios_mercado, alpha=0.1, color='#000000', label=t['precio_mercado'])
         
     ax.set_xlabel("Strike")
     ax.set_ylabel(t["graph_y"])
