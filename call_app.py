@@ -28,7 +28,7 @@ texts = {
         "sigma_lbl": "Sigma (Volatility)",
         "sigma_cap": "ℹ️ Conservative value based on past data",
         "alpha_lbl": "Alpha",
-        "fuente_precio": "ℹ️ Data from GoldAPI",
+        "fuente_precio": "ℹ️ Data from API Ninjas",
         "tasa_lbl": "Risk-Free Rate",
         "fuente_tasa": "ℹ️ Source: FRED",
         "venc_msg": "Expires in {} days ({})",
@@ -48,7 +48,7 @@ texts = {
         "lbl_res": "Sigma found",
         "lbl_mkt_info": "Enter market prices for each Strike:",
         "precio_mercado": "Price market",
-        "msg_error_api": "No connection to GoldAPI",
+        "msg_error_api": "No connection to API Ninjas",
         "msg_manual_price": "Please enter the price manually to continue.",
         "error_fred": "No connection to FRED",
     },
@@ -59,7 +59,7 @@ texts = {
         "sigma_lbl": "Sigma (Volatilidad)",
         "sigma_cap": "ℹ️ Valor conservador basado en datos pasados",
         "alpha_lbl": "Alfa",
-        "fuente_precio": "ℹ️ Datos de GoldAPI",
+        "fuente_precio": "ℹ️ Datos de API Ninjas",
         "tasa_lbl": "Tasa Libre de Riesgo",
         "fuente_tasa": "ℹ️ Fuente: FRED",
         "venc_msg": "Vencimiento en {} días ({})",
@@ -79,7 +79,7 @@ texts = {
         "lbl_res": "Sigma hallado",
         "lbl_mkt_info": "Introduce los precios de mercado para cada Strike:",
         "precio_mercado": "Valor de mercado",
-        "msg_error_api": "Sin conexión con GoldAPI",
+        "msg_error_api": "Sin conexión con API Ninjas",
         "msg_manual_price": "Por favor, coloque el precio manualmente para continuar.",
         "error_fred": "Sin conexión con FRED",
     },
@@ -90,7 +90,7 @@ texts = {
         "sigma_lbl": "Sigma (Volatilidade)",
         "sigma_cap": "ℹ️ Valor conservador baseado em dados passados",
         "alpha_lbl": "Alfa",
-        "fuente_precio": "ℹ️ Dados da GoldAPI",
+        "fuente_precio": "ℹ️ Dados da API Ninjas",
         "tasa_lbl": "Taxa Livre de Risco",
         "fuente_tasa": "ℹ️ Fonte: FRED",
         "venc_msg": "Expira em {} dias ({})",
@@ -110,7 +110,7 @@ texts = {
         "lbl_res": "Sigma encontrado",
         "lbl_mkt_info": "Insira os preços de mercado para cada Strike:",
         "precio_mercado": "Mercado de preços",
-        "msg_error_api": "Sem conexão com a GoldAPI",
+        "msg_error_api": "Sem conexão com a API Ninjas",
         "msg_manual_price": "Por favor, insira o preço manualmente para continuar.",
         "error_fred": "Sem conexão com a FRED",
     }
@@ -159,6 +159,33 @@ def get_market_data_goldapi():
         return None
     except:
         return None #mensaje alerta
+        
+def get_market_data_ninjas():
+    cache_file = "future_price.txt"
+    # Leamos el archivo
+    if os.path.exists(cache_file):
+        file_age = time.time() - os.path.getmtime(cache_file)
+        if file_age < 10800:
+            try:
+                with open(cache_file, "r") as f:
+                    cached_file = float(f.read())
+                return cached_file
+            except:
+                pass
+    # Buscamos en la web
+    try:
+        api_key = st.secrets["NINJAS_API_KEY"]
+        headers = {'X-Api-Key': api_key}
+        response = requests.get('https://api.api-ninjas.com/v1/goldprice', headers=headers)
+        data = response.json()
+        if 'price' in data:
+            nuevo_precio = float(data['price'])
+            with open(cache_file, "w") as f:
+                f.write(str(nuevo_precio))
+            return nuevo_precio
+        return None
+    except:
+        return None
 
 #@st.cache_data(ttl=86400)
 def fecha_vencimiento_oro(year, month):
@@ -230,7 +257,7 @@ def calcular_call(S, K, r, T, sigma, beta, paso, param_a):
     m = int(round(T / paso))
     if m <= 0: m = 1
     dt = T / m
-    u = np.exp(param_a * (T**0.5) * sigma * (paso**beta))
+    u = np.exp(param_a * sigma * (paso**beta))
     d = u**(-1/param_a**2)
     tasa = np.exp(r * dt)
     p = (tasa - d) / (u - d)
@@ -249,7 +276,7 @@ VALOR_PASO_ORIGINAL = 0.1
 if 'paso_val' not in st.session_state:
     st.session_state.paso_val = VALOR_PASO_ORIGINAL
 if 'market_cache' not in st.session_state:
-    st.session_state.market_cache = get_market_data_goldapi()
+    st.session_state.market_cache = get_market_data_ninjas() 
     st.session_state.tasa_cache = get_fred_risk_free_rate()
 if 'data_grafico' not in st.session_state:
     st.session_state.data_grafico = None
