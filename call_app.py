@@ -94,7 +94,7 @@ texts = {
         "val_act": "Preço Atual",
         "strike_atm": "Strike At-the-money",
         "paso_temp": "Passo Temporal",
-        "reset": "Redefinir",
+        "reset": "Restablecer",
         "recalc": "RECALCULAR",
         "msg_loading": "Executando modelo binomial...",
         "msg_success": "Cálculo concluído!",
@@ -363,7 +363,7 @@ with herramientas:
     """, unsafe_allow_html=True)
 
     # Botones de paso temporal
-    boton1, boton2 = st.columns([1, 1])
+    boton1, boton2 = st.columns([1, 1.5])
     with boton1:
         if st.button("x10⁻¹"):
             st.session_state.paso_val *= 0.1
