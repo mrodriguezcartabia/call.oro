@@ -50,6 +50,7 @@ texts = {
         "precio_mercado": "Price market",
         "msg_error_api": "No connection to GoldAPI",
         "msg_manual_price": "Please enter the price manually to continue.",
+        "error_fred": "No connection to FRED",
     },
     "es": {
         "title": "Valuador de Call de Oro",
@@ -80,6 +81,7 @@ texts = {
         "precio_mercado": "Valor de mercado",
         "msg_error_api": "Sin conexión con GoldAPI",
         "msg_manual_price": "Por favor, coloque el precio manualmente para continuar.",
+        "error_fred": "Sin conexión con FRED",
     },
     "pt": {
         "title": "Valiador de Call de Ouro",
@@ -110,6 +112,7 @@ texts = {
         "precio_mercado": "Mercado de preços",
         "msg_error_api": "Sem conexão com a GoldAPI",
         "msg_manual_price": "Por favor, insira o preço manualmente para continuar.",
+        "error_fred": "Sem conexão com a FRED",
     }
 }
 
@@ -129,7 +132,6 @@ def local_css(file_name):
 local_css("style.css")
 
 # --- FUNCIONES DE OBTENCIÓN DE DATOS ---
-#@st.cache_data(ttl=3600)
 def get_market_data_goldapi():
     cache_file = "gold_price.txt"
 
@@ -167,40 +169,36 @@ def fecha_vencimiento_oro(year, month):
         return schedule.iloc[-4].name.date()
     except:
         return datetime(year, month, 25).date() #agregar alerta
-"""
-@st.cache_data(ttl=86400)
-def get_fred_risk_free_rate():
-    try:
-        api_key = st.secrets["FRED_API_KEY"]
-        url = f"https://api.stlouisfed.org/api/series/observations?series_id=DTB4WK&api_key={api_key}&file_type=json&sort_order=desc&limit=1"
-        response = requests.get(url)
-        data = response.json()
-        return float(data['observations'][0]['value']) / 100
-    except:
-        return 0.0425
-"""
-def get_fred_risk_free_rate_nueva():
-    try:
-        api_key = st.secrets["FRED_API_KEY"]
-        url = f"https://api.stlouisfed.org/fred/series/observations?series_id=DTB4WK&api_key={api_key}&file_type=json&sort_order=desc&limit=5"
-        response = requests.get(url)
-        if response.status_code != 200:
-            st.write(f"Código de error: {response.status_code}")
-            st.write(f"Respuesta del servidor: {response.text[:100]}")
-            return 0.03
-        data = response.json()
         
-        # Buscamos el primer valor que sea numérico (evitamos los ".")
+def get_fred_risk_free_rate():
+    cache_file = "risk_free.txt"
+
+    # Leamos el archivo
+    if os.path.exists(cache_file):
+        file_age = time.time() - os.path.getmtime(cache_file)
+        if file_age < 10800:
+            try:
+                with open(cache_file, "r") as f:
+                    cached_file = float(f.read())
+                return cached_file
+            except:
+                pass
+    # Buscamos en internet
+    try:
+        api_key = st.secrets["FRED_API_KEY"]
+        headers = {"User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36"}
+        response = requests.get(f"https://api.stlouisfed.org/fred/series/observations?series_id=DTB4WK&api_key={api_key}&file_type=json&sort_order=desc&limit=5", headers=headers)
+        data = response.json()
+        # Buscamos el primer valor útil (por si es feriado)
         for obs in data['observations']:
-            val = obs['value']
+            val =obs['value']
             if val != ".":
                 return float(val) / 100
-        
-        return 0.0425
-    except Exception as e:
-        # Esto te mostrará el error real en la pantalla de la app
-        st.sidebar.error(f"Error FRED: {e}")
-        return 0.0425
+        st.error(t['error_fred'])
+        return 0.04
+    except:
+        st.error(t['error_fred'])
+        return 0.04 
         
 def hallar_sigma_optimo(precios_mercado, strikes, S, r, T, beta, paso, param_a):
     def error_cuadratico(sigma_test):
@@ -252,7 +250,7 @@ if 'paso_val' not in st.session_state:
     st.session_state.paso_val = VALOR_PASO_ORIGINAL
 if 'market_cache' not in st.session_state:
     st.session_state.market_cache = get_market_data_goldapi()
-    st.session_state.tasa_cache = get_fred_risk_free_rate_nueva()
+    st.session_state.tasa_cache = get_fred_risk_free_rate()
 if 'data_grafico' not in st.session_state:
     st.session_state.data_grafico = None
 if 'mostrar_editor' not in st.session_state:
