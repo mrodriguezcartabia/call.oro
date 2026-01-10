@@ -167,7 +167,7 @@ def fecha_vencimiento_oro(year, month):
         return schedule.iloc[-4].name.date()
     except:
         return datetime(year, month, 25).date() #agregar alerta
-
+"""
 @st.cache_data(ttl=86400)
 def get_fred_risk_free_rate():
     try:
@@ -177,6 +177,24 @@ def get_fred_risk_free_rate():
         data = response.json()
         return float(data['observations'][0]['value']) / 100
     except:
+        return 0.0425
+"""
+def get_fred_risk_free_rate():
+    try:
+        api_key = st.secrets["FRED_API_KEY"]
+        url = f"https://api.stlouisfed.org/api/series/observations?series_id=DTB4WK&api_key={api_key}&file_type=json&sort_order=desc&limit=5"
+        response = requests.get(url)
+        data = response.json()
+        
+        # Buscamos el primer valor que sea numérico (evitamos los ".")
+        for obs in data['observations']:
+            val = obs['value']
+            if val != ".":
+                return float(val) / 100
+        
+        return 0.0425
+    except Exception as e:
+        # Esto te mostrará el error real en la pantalla de la app
         st.sidebar.error(f"Error FRED: {e}")
         return 0.0425
         
