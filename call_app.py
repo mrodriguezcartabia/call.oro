@@ -344,7 +344,7 @@ with col1:
 with col2:
     beta = st.number_input("Beta", value=0.5, step=0.01, min_value=0.0, max_value=10.0)
     tasa_r = st.number_input(t["tasa_lbl"], value=st.session_state.tasa_cache, format="%.4f", min_value=0.0, max_value=10.0)
-    st.caption(t["fuente_tasa"])
+    st.caption(f"{t['fuente_tasa']} = {st.session_state.tasa_cache}")
 
 # --- BOTONES DE CONTROL Y GRÁFICO ---
 herramientas, grafico = st.columns([1, 3])
