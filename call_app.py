@@ -30,7 +30,7 @@ def diagnostico_api():
             return
         
         api_key = st.secrets["ALPHAVANTAGE_API_KEY"]
-        url = f"https://www.alphavantage.co/query?function=GOLD&apikey={api_key}"
+        url = f"https://www.alphavantage.co/query?function=GOLD&interval=monthly&apikey={api_key}"
         
         st.write(f"Intentando conectar a: `https://www.alphavantage.co/query?function=GOLD&apikey=***`")
         
@@ -223,14 +223,16 @@ def get_market_data_alpha():
     try:
         api_key = st.secrets["ALPHAVANTAGE_API_KEY"]  
         headers = {"User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36"}
-        response = requests.get(f"https://www.alphavantage.co/query?function=GOLD&apikey={api_key}", headers=headers)
+        response = requests.get(f"https://www.alphavantage.co/query?function=GOLD&interval=monthly&apikey={api_key}", headers=headers, timeout=10)
         data = response.json()
         if "data" in data and len(data["data"]) > 0:
-            nuevo_precio = float(data["data"][0]["value"])
-            with open(cache_file, "w") as f:
-                f.write(str(nuevo_precio))
-            return nuevo_precio
-        return None
+            primer_valor = data["data"][0]["value"]
+            if primer_valor and primer_valor != ".": # verificamos que no sea vacío o un punto
+                nuevo_precio = float(primer_valor)
+                with open(cache_file, "w") as f:
+                    f.write(str(nuevo_precio))
+                return nuevo_precio
+            return None
     except Exception as e:
         st.error(f"Error: {e}")
         return None
