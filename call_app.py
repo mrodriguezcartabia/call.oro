@@ -176,7 +176,7 @@ def get_market_data_ninjas():
     try:
         api_key = st.secrets["NINJAS_API_KEY"]
         headers = {'X-Api-Key': api_key}
-        response = requests.get('https://api.api-ninjas.com/v1/goldprice', headers=headers)
+        response = requests.get('https://api.api-ninjas.com/v1/commodityprice?name=Gold', headers=headers)
 
         if response.status_code != 200:
             st.error(f"Error de API: código {response.status_code}")
