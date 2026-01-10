@@ -6,65 +6,13 @@ import numpy as np
 import matplotlib.pyplot as plt
 import os
 import time
+import json
 from datetime import datetime
 from scipy.special import comb
 from scipy.optimize import minimize_scalar
 
 # Debe estar al comienzo
 
-def guardar_manual():
-    if st.session_state.input_manual_temp:
-        st.session_state.market_cache = st.session_state.input_manual_temp
-
-import streamlit as st
-import requests
-import json
-
-def diagnostico_api():
-    st.subheader("🔍 Diagnóstico de Conexión Alpha Vantage")
-    
-    try:
-        # 1. Verificar si la Key existe
-        if "ALPHAVANTAGE_API_KEY" not in st.secrets:
-            st.error("❌ No se encontró la clave 'ALPHAVANTAGE_API_KEY' en los Secrets.")
-            return
-        
-        api_key = st.secrets["ALPHAVANTAGE_API_KEY"]
-        url = f"https://www.alphavantage.co/query?function=TIME_SERIES_DAILY&symbol=GLD&apikey={api_key}"
-        
-        st.write(f"Intentando conectar a: `https://www.alphavantage.co/query?function=GOLD&apikey=***`")
-        
-        # 2. Hacer la petición
-        response = requests.get(url, timeout=10)
-        
-        # 3. Ver el código de estado HTTP
-        st.write(f"Código de respuesta HTTP: `{response.status_code}`")
-        
-        # 4. Ver el JSON crudo que devuelve la API
-        data = response.json()
-        st.write("Respuesta completa del servidor:")
-        st.json(data)
-        
-        #5. Análisis del contenido (Ajustado para TIME_SERIES_DAILY / GLD)
-        if "Note" in data:
-            st.warning("⚠️ Límite de frecuencia alcanzado (la API gratuita permite 5 llamadas/min).")
-        elif "Error Message" in data:
-            st.error("❌ La API devolvió un error. Revisa si la API Key es válida.")
-        elif "Time Series (Daily)" in data:
-            ultima_fecha = list(data["Time Series (Daily)"].keys())[0]
-            precio = data["Time Series (Daily)"][ultima_fecha]["4. close"]
-            st.success(f"✅ ¡Éxito! El precio de GLD encontrado es: {precio}")
-            st.info(f"Precio estimado por onza (x10): {float(precio)*10}")
-        else:
-            st.info("ℹ️ La API respondió pero no se encontró la estructura 'Time Series (Daily)'.")
-            
-    except Exception as e:
-        st.error(f"💥 Error fatal: {e}")
-
-# AHORA SÍ, esto está fuera de la función
-if st.checkbox("Ejecutar Test de API"):
-    diagnostico_api()
-        
 # --- LÓGICA DE IDIOMA ---
 params = st.query_params
 idioma = params.get("lang", "en") # Por defecto inglés
@@ -181,6 +129,9 @@ def local_css(file_name):
 local_css("style.css")
 
 # --- FUNCIONES DE OBTENCIÓN DE DATOS ---
+def guardar_manual():
+    st.session_state.market_cache = st.session_state.input_inicial
+
 def get_market_data_goldapi():
     cache_file = "gold_price.txt"
 
@@ -333,7 +284,8 @@ VALOR_PASO_ORIGINAL = 0.1
 if 'paso_val' not in st.session_state:
     st.session_state.paso_val = VALOR_PASO_ORIGINAL
 if 'market_cache' not in st.session_state:
-    st.session_state.market_cache = get_market_data_alpha() 
+    st.session_state.market_cache = None
+if 'tasa_cache' not in st.session_state:
     st.session_state.tasa_cache = get_fred_risk_free_rate()
 if 'data_grafico' not in st.session_state:
     st.session_state.data_grafico = None
@@ -347,6 +299,8 @@ if 'precios_mercado' not in st.session_state:
 
 # --- INTERFAZ ---
 # Intentamos obtener el precio de la sesión o de la API
+
+
         
 if st.session_state.market_cache is None:
     _, center_col, _ = st.columns([1, 2, 1])
@@ -354,18 +308,17 @@ if st.session_state.market_cache is None:
     with center_col:
         st.markdown(f"""
             <div class="overlay-card-static">
-                <h2 style="color: #DAA520; text-align: center;">{t['msg_error_api']}</h2>
+                <h2 style="color: #DAA520; text-align: center;">{t['title']}</h2>
                 <p style="color: white; text-align: center;">{t['msg_manual_price']}</p>
             </div>
         """, unsafe_allow_html=True)
-        
-        # 1. Usamos una clave diferente para el input temporal
-        # 2. Al pulsar Enter, guardamos el valor inmediatamente
-        precio_temp = st.number_input(t["val_act"], value=None, placeholder="", key="input_manual_temp", on_change=guardar_manual)
+      
+        # Al pulsar Enter, guardamos el valor inmediatamente
+        precio_inicial = st.number_input(t["val_act"], value=None, placeholder="", key="input_inicial")
         
         if st.button("ENTER", key="btn_start_manual", use_container_width=True, type="primary"):
-            guardar_manual()
-            if precio_temp is not None and  precio_temp > 0:
+            if precio_inicial is not None and  precio_inicial > 0:
+                guardar_manual()
                 st.rerun()
             else:
                 st.warning(t["msg_manual_price"])
@@ -375,7 +328,7 @@ if st.session_state.market_cache is None:
 # Si llegamos aquí, ya hay un precio (sea por API o manual)
 dias = (vencimiento - hoy.date()).days 
 T = dias/ 365.0
-precio_s = float(st.session_state.market_cache) if st.session_state.market_cache is not None else 0.0
+precio_s = float(st.session_state.market_cache)
 strike = round(precio_s / 5) * 5
 
 col1, col2 = st.columns(2)
