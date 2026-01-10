@@ -129,7 +129,7 @@ def local_css(file_name):
 local_css("style.css")
 
 # --- FUNCIONES DE OBTENCIÓN DE DATOS ---
-@st.cache_data(ttl=3600)
+#@st.cache_data(ttl=3600)
 def get_market_data_goldapi():
     cache_file = "gold_price.txt"
 
@@ -158,7 +158,7 @@ def get_market_data_goldapi():
     except:
         return None #mensaje alerta
 
-@st.cache_data(ttl=86400)
+#@st.cache_data(ttl=86400)
 def fecha_vencimiento_oro(year, month):
     try:
         cme = mcal.get_calendar('CME_Total')
@@ -182,7 +182,7 @@ def get_fred_risk_free_rate():
 def get_fred_risk_free_rate():
     try:
         api_key = st.secrets["FRED_API_KEY"]
-        url = f"https://api.stlouisfed.org/fred/api/series/observations?series_id=DTB4WK&api_key={api_key}&file_type=json&sort_order=desc&limit=5"
+        url = f"https://api.stlouisfed.org/fred/series/observations?series_id=DTB4WK&api_key={api_key}&file_type=json&sort_order=desc&limit=5"
         response = requests.get(url)
         if response.status_code != 200:
             st.write(f"Código de error: {response.status_code}")
