@@ -340,8 +340,8 @@ with herramientas:
                 hide_index=True, 
                 use_container_width=True,
                 num_rows="fixed",
-                column_config={"Strike": st.column_config.NumberColumn(disabled=True)},
-                min_value=0.0
+                column_config={"Strike": st.column_config.NumberColumn(disabled=True),
+                "Precio Call Mercado": st.column_config.NumberColumn(min_value=0.0)}
             )
             
             # 2. Botón para confirmar los cambios
