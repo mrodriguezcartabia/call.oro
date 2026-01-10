@@ -182,7 +182,7 @@ def get_fred_risk_free_rate():
 def get_fred_risk_free_rate():
     try:
         api_key = st.secrets["FRED_API_KEY"]
-        url = f"https://api.stlouisfed.org/api/series/observations?series_id=DTB4WK&api_key={api_key}&file_type=json&sort_order=desc&limit=5"
+        url = f"https://api.stlouisfed.org/fred/api/series/observations?series_id=DTB4WK&api_key={api_key}&file_type=json&sort_order=desc&limit=5"
         response = requests.get(url)
         if response.status_code != 200:
             st.write(f"Código de error: {response.status_code}")
