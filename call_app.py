@@ -337,7 +337,7 @@ with col1:
     param_a = st.number_input(t["alpha_lbl"], value=param_a_def, step=0.01, min_value=0.1, max_value=10.0)
     sigma_def = 0.16
     sigma = st.number_input(t["sigma_lbl"], value=sigma_def, format="%.2f", min_value=0.1, max_value=2.0)
-    st.caption(t["sigma_cap"])
+    #st.caption(t["sigma_cap"])
 
 with col2:
     beta = st.number_input("Beta", value=0.5, step=0.01, min_value=0.0, max_value=10.0)
@@ -354,7 +354,7 @@ with herramientas:
             <span class="metric-value-small">{precio_s}</span>
         </div>
     """, unsafe_allow_html=True)
-    st.caption(t["fuente_precio"])
+    #st.caption(t["fuente_precio"])
     st.markdown(f"""
         <div class="custom-metric-container">
             <span class="metric-label">{t["paso_temp"]}:</span>
