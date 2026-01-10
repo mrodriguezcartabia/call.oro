@@ -177,6 +177,7 @@ def get_fred_risk_free_rate():
         data = response.json()
         return float(data['observations'][0]['value']) / 100
     except:
+        st.sidebar.error(f"Error FRED: {e}")
         return 0.0425
         
 def hallar_sigma_optimo(precios_mercado, strikes, S, r, T, beta, paso, param_a):
