@@ -14,8 +14,8 @@ from scipy.optimize import minimize_scalar
 
 def guardar_manual():
     if st.session_state.input_manual_temp:
-        st.session_state.market_cache = st.session_state.input_manual_temp     
-
+        st.session_state.market_cache = st.session_state.input_manual_temp
+        
 # --- LÓGICA DE IDIOMA ---
 params = st.query_params
 idioma = params.get("lang", "en") # Por defecto inglés
@@ -177,16 +177,28 @@ def get_market_data_ninjas():
         api_key = st.secrets["NINJAS_API_KEY"]
         headers = {'X-Api-Key': api_key}
         response = requests.get('https://api.api-ninjas.com/v1/goldprice', headers=headers)
-        data = response.json()
-        if 'price' in data:
-            nuevo_precio = float(data['price'])
-            with open(cache_file, "w") as f:
-                f.write(str(nuevo_precio))
-            return nuevo_precio
-        return None
-    except:
-        return None
 
+        if response.status_code != 200:
+            st.error(f"Error de API: código {response.status_code}")
+            st.write(response.text)
+            return None
+            
+        data = response.json()
+        if isinstance(data, list) and len(data) > 0:
+            nuevo_precio = float(data[0]['price']) if 'price' in data[0] else float(data[0])
+        elif 'price' in data:
+            nuevo_precio = float(data['price'])
+        else:
+            st.warning("La API respondió pero no de encontró el campo price")
+            st.write(data)
+            return None
+        with open(cache_file, "w") as f:
+            f.write(str(nuevo_precio))
+        return nuevo_precio
+    except Exception as e:
+        st.error(f"Fallo crítico en la solicitud: {str(e)}")
+        return None
+        
 #@st.cache_data(ttl=86400)
 def fecha_vencimiento_oro(year, month):
     try:
@@ -225,9 +237,9 @@ def get_fred_risk_free_rate():
         return 0.04
     except:
         st.error(t['error_fred'])
-        return 0.04 
-        
-def hallar_sigma_optimo(precios_mercado, strikes, S, r, T, beta, paso, param_a):
+        return 0.04
+    
+    def hallar_sigma_optimo(precios_mercado, strikes, S, r, T, beta, paso, param_a):
     def error_cuadratico(sigma_test):
         if sigma_test <= 0: return 1e10
         err = 0
@@ -265,7 +277,7 @@ def calcular_call(S, K, r, T, sigma, beta, paso, param_a):
     suma_binomial = 0
     for k in range(m + 1):
         prob = comb(m, k) * (p**k) * ((1-p)**(m-k))
-        st_k = S * (u**(2*k - m))
+        st_k = S * (u**k) * (d**(m-k))
         payoff = max(st_k - K, 0)
         suma_binomial += prob * payoff
     return np.exp(-r * T) * suma_binomial
@@ -318,7 +330,7 @@ if st.session_state.market_cache is None:
 # Si llegamos aquí, ya hay un precio (sea por API o manual)
 dias = (vencimiento - hoy.date()).days 
 T = dias/ 365.0
-precio_s = float(st.session_state.market_cache) if st.session_state.market_cache is not None else 0.0      
+precio_s = float(st.session_state.market_cache) if st.session_state.market_cache is not None else 0.0
 strike = round(precio_s / 5) * 5
 
 col1, col2 = st.columns(2)
