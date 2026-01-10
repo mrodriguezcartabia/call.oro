@@ -305,7 +305,7 @@ with herramientas:
     """, unsafe_allow_html=True)
 
     # Botones de paso temporal
-    boton1, boton2 = st.columns([1, 2])
+    boton1, boton2 = st.columns([1, 1])
     with boton1:
         if st.button("x10⁻¹"):
             st.session_state.paso_val *= 0.1
