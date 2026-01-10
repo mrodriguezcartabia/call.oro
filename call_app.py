@@ -179,7 +179,7 @@ def get_fred_risk_free_rate():
     except:
         return 0.0425
 """
-def get_fred_risk_free_rate():
+def get_fred_risk_free_rate_nueva():
     try:
         api_key = st.secrets["FRED_API_KEY"]
         url = f"https://api.stlouisfed.org/fred/series/observations?series_id=DTB4WK&api_key={api_key}&file_type=json&sort_order=desc&limit=5"
@@ -252,7 +252,7 @@ if 'paso_val' not in st.session_state:
     st.session_state.paso_val = VALOR_PASO_ORIGINAL
 if 'market_cache' not in st.session_state:
     st.session_state.market_cache = get_market_data_goldapi()
-    st.session_state.tasa_cache = get_fred_risk_free_rate()
+    st.session_state.tasa_cache = get_fred_risk_free_rate_nueva()
 if 'data_grafico' not in st.session_state:
     st.session_state.data_grafico = None
 if 'mostrar_editor' not in st.session_state:
